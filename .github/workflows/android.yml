@@ -62,7 +62,7 @@ jobs:
           retention-days: 7
 
       - name: Tailscale connect
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.TS_OAUTH_CLIENT_ID != '' && secrets.TS_OAUTH_SECRET != ''
         uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
@@ -71,7 +71,7 @@ jobs:
           version: latest
 
       - name: Install debug APK on phone via Tailscale
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.PHONE_TAILSCALE_IP != ''
         env:
           PHONE_IP: ${{ secrets.PHONE_TAILSCALE_IP }}
         run: |

@@ -27,9 +27,11 @@ jobs:
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v6
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          cache-cleanup: on-success
+          add-job-summary: on-failure
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -58,3 +60,31 @@ jobs:
             **/build/reports/tests/
             **/build/test-results/
           retention-days: 7
+
+      - name: Tailscale connect
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          version: latest
+
+      - name: Install debug APK on phone via Tailscale
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          PHONE_IP: ${{ secrets.PHONE_TAILSCALE_IP }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PHONE_IP:-}" ]; then
+            echo "PHONE_TAILSCALE_IP secret not set; skipping device install."
+            exit 0
+          fi
+          ADB="$ANDROID_HOME/platform-tools/adb"
+          APK=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          echo "Installing $APK on $PHONE_IP:5555"
+          "$ADB" connect "$PHONE_IP:5555"
+          "$ADB" -s "$PHONE_IP:5555" wait-for-device
+          "$ADB" -s "$PHONE_IP:5555" install -r --fastdeploy "$APK" \
+            || "$ADB" -s "$PHONE_IP:5555" install -r "$APK"
+          "$ADB" disconnect "$PHONE_IP:5555" || true

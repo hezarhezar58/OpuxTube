@@ -23,3 +23,19 @@ appId: dev.opux.tubeclient.debug
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 02_pip_window
+
+# Stay in PiP for a few seconds — playback must keep running and the new PiP
+# RemoteActions (rewind / play-pause / forward) must not crash the activity.
+- waitForAnimationToEnd:
+    timeout: 4000
+
+# Bring the activity back to the foreground without restarting it. The video
+# surface should reattach immediately and report visible.
+- launchApp:
+    clearState: false
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 10000
+- takeScreenshot: 03_player_after_pip

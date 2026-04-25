@@ -1,0 +1,71 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+
+# Open first video → player
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_channel_chip"
+    timeout: 25000
+- takeScreenshot: 01_player_with_chip
+
+# Tap channel chip → channel page
+- tapOn:
+    id: "player_channel_chip"
+- extendedWaitUntil:
+    visible:
+      id: "channel_subscribe"
+    timeout: 20000
+- takeScreenshot: 02_channel_unsubscribed
+
+# Subscribe
+- tapOn:
+    id: "channel_subscribe"
+- extendedWaitUntil:
+    visible:
+      id: "channel_unsubscribe"
+    timeout: 5000
+- takeScreenshot: 03_channel_subscribed
+
+# Back to player, back to home
+- tapOn:
+    id: "channel_back"
+- tapOn:
+    id: "player_back"
+
+# Library → Subscriptions tab
+- tapOn:
+    id: "nav_library"
+- tapOn:
+    id: "library_tab_subscriptions"
+- extendedWaitUntil:
+    visible:
+      id: "library_subscription_0"
+    timeout: 5000
+- takeScreenshot: 04_subscriptions_tab
+
+# Tap subscription → channel page
+- tapOn:
+    id: "library_subscription_0"
+- extendedWaitUntil:
+    visible:
+      id: "channel_unsubscribe"
+    timeout: 20000
+- takeScreenshot: 05_channel_from_library
+
+# Unsubscribe
+- tapOn:
+    id: "channel_unsubscribe"
+- extendedWaitUntil:
+    visible:
+      id: "channel_subscribe"
+    timeout: 5000
+- takeScreenshot: 06_unsubscribed

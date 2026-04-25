@@ -1,0 +1,60 @@
+appId: dev.opux.tubeclient.debug
+---
+# Start fresh — clear app state so the watch history DB is empty
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- takeScreenshot: 01_home_fresh
+
+# Verify Library is empty initially
+- tapOn:
+    id: "nav_library"
+- assertVisible: "Henüz izleme geçmişin yok"
+- takeScreenshot: 02_history_empty
+
+# Open Home, watch the first video
+- tapOn:
+    id: "nav_home"
+- assertVisible:
+    id: "home_video_0"
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+- takeScreenshot: 03_player_first
+
+# Back, go to Library — entry should now exist
+- tapOn:
+    id: "player_back"
+- tapOn:
+    id: "nav_library"
+- extendedWaitUntil:
+    visible:
+      id: "library_history_0"
+    timeout: 10000
+- takeScreenshot: 04_history_populated
+
+# Replay from history
+- tapOn:
+    id: "library_history_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+- takeScreenshot: 05_replayed_from_history
+
+# Back to library, clear all
+- tapOn:
+    id: "player_back"
+- assertVisible:
+    id: "library_history_0"
+- tapOn:
+    id: "library_clear"
+- assertVisible: "Henüz izleme geçmişin yok"
+- takeScreenshot: 06_history_cleared

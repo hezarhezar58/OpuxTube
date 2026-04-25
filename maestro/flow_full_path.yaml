@@ -1,0 +1,53 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: false
+- assertVisible: "OpuxTube"
+- assertVisible:
+    id: "home_video_0"
+
+# Home → Search
+- tapOn:
+    id: "nav_search"
+- assertVisible: "Aramak için yukarıya yazın"
+
+# Type a query
+- tapOn:
+    id: "search_field"
+- inputText: "lofi"
+- extendedWaitUntil:
+    visible:
+      id: "search_video_0"
+    timeout: 15000
+- takeScreenshot: 01_search_results
+
+# First result → Player
+- tapOn:
+    id: "search_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 20000
+- takeScreenshot: 02_player_loaded
+
+# Back to Search (state should be preserved)
+- tapOn:
+    id: "player_back"
+- assertVisible:
+    id: "search_field"
+- assertVisible:
+    id: "search_video_0"
+- takeScreenshot: 03_back_to_search
+
+# Bottom nav: Library — has Geçmiş tab (since we just watched a video)
+- tapOn:
+    id: "nav_library"
+- assertVisible: "Geçmiş"
+- takeScreenshot: 04_library
+
+# Back to Home
+- tapOn:
+    id: "nav_home"
+- assertVisible:
+    id: "home_video_0"
+- takeScreenshot: 05_home_restored

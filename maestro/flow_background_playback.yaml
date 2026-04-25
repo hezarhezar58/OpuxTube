@@ -1,0 +1,38 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+
+# Start playback
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+
+# Let it play for ~12 seconds
+- waitForAnimationToEnd:
+    timeout: 12000
+- takeScreenshot: 01_player_before_background
+
+# Background the app — audio should keep playing via MediaSessionService
+- pressKey: Home
+- waitForAnimationToEnd:
+    timeout: 6000
+- takeScreenshot: 02_home_screen
+
+# Bring the app back to foreground without killing the process
+- launchApp:
+    clearState: false
+    stopApp: false
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 15000
+- takeScreenshot: 03_player_after_background

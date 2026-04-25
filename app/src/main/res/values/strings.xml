@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpuxTube</string>
+    <string name="tab_home">Ana Sayfa</string>
+    <string name="tab_search">Ara</string>
+    <string name="tab_library">Kitaplık</string>
+    <string name="search_hint">YouTube\'da ara</string>
+    <string name="retry">Yeniden dene</string>
+    <string name="error_generic">Bir hata oluştu</string>
+    <string name="loading">Yükleniyor…</string>
+    <string name="notification_channel_playback">Oynatma</string>
+</resources>

@@ -1,0 +1,25 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+
+# Wait for actual playback to start (so videoSize is known and player.isPlaying=true)
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: 01_player_fullscreen
+
+# Press HOME — onUserLeaveHint should trigger enterPictureInPictureMode
+- pressKey: Home
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 02_pip_window

@@ -1,0 +1,16 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+- waitForAnimationToEnd:
+    timeout: 5000

@@ -1,0 +1,8 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: false
+- tapOn:
+    id: "nav_search"
+- assertVisible:
+    text: "Aramak için yukarıya yazın"

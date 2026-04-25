@@ -1,0 +1,46 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+
+# Watch the first video long enough for the 10s ticker to fire at least once
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+
+# Wait 13 seconds so progress >= 10s gets persisted
+- waitForAnimationToEnd:
+    timeout: 13000
+- takeScreenshot: 01_player_after_13s
+
+# Back to home, then library
+- tapOn:
+    id: "player_back"
+- tapOn:
+    id: "nav_library"
+- extendedWaitUntil:
+    visible:
+      id: "library_history_0"
+    timeout: 10000
+- takeScreenshot: 02_history_with_progress
+
+# Open the same video from history — should resume from ~13s
+- tapOn:
+    id: "library_history_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+
+# Tap the surface to make the ExoPlayer controller (with time display) appear
+- tapOn:
+    id: "player_surface"
+- takeScreenshot: 03_player_resumed

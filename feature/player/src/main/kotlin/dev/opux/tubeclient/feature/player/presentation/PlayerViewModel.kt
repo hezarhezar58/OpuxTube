@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
@@ -122,12 +123,13 @@ class PlayerViewModel @Inject constructor(
 
     private fun fetchAndApplySkipSegments(videoId: String) {
         viewModelScope.launch {
-            getSkipSegments(videoId).onSuccess { fetched ->
-                if (fetched.isEmpty()) return@onSuccess
-                segments = fetched.sortedBy { it.startMs }
-                startSkipperLoop()
-            }
-            // Failures are silently ignored — SponsorBlock is best-effort.
+            getSkipSegments(videoId)
+                .onSuccess { fetched ->
+                    if (fetched.isEmpty()) return@onSuccess
+                    segments = fetched.sortedBy { it.startMs }
+                    startSkipperLoop()
+                }
+                .onFailure { Timber.w(it, "SB fetch failed for $videoId") }
         }
     }
 

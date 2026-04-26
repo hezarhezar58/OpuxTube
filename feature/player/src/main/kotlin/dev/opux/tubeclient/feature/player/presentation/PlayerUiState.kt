@@ -7,3 +7,19 @@ data class PlayerUiState(
     val detail: VideoDetail? = null,
     val error: String? = null,
 )
+
+data class SkippedSegmentEvent(
+    val category: String,
+    val durationMs: Long,
+)
+
+internal fun String.toTurkishLabel(): String = when (this) {
+    "sponsor" -> "Sponsor"
+    "intro" -> "İntro"
+    "outro" -> "Bitiş"
+    "selfpromo" -> "Kanal reklamı"
+    "interaction" -> "Etkileşim"
+    "music_offtopic" -> "Konu dışı müzik"
+    "preview" -> "Önizleme"
+    else -> this
+}

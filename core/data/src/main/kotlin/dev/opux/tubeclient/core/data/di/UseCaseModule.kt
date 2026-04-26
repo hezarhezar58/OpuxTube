@@ -6,6 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.opux.tubeclient.core.domain.repository.ChannelRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
+import dev.opux.tubeclient.core.domain.repository.SponsorBlockRepository
 import dev.opux.tubeclient.core.domain.repository.SubscriptionRepository
 import dev.opux.tubeclient.core.domain.repository.TrendingRepository
 import dev.opux.tubeclient.core.domain.repository.VideoRepository
@@ -14,6 +15,7 @@ import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelVideosUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
+import dev.opux.tubeclient.core.domain.usecase.GetSkipSegmentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSubscriptionsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetTrendingUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetVideoDetailsUseCase
@@ -85,4 +87,8 @@ object UseCaseModule {
     @Provides
     @Singleton
     fun provideUnsubscribeChannelUseCase(repo: SubscriptionRepository) = UnsubscribeChannelUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideGetSkipSegmentsUseCase(repo: SponsorBlockRepository) = GetSkipSegmentsUseCase(repo)
 }

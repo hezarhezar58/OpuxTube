@@ -6,12 +6,14 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.opux.tubeclient.core.data.repository.ChannelRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.SearchRepositoryImpl
+import dev.opux.tubeclient.core.data.repository.SponsorBlockRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.SubscriptionRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.TrendingRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.VideoRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.WatchHistoryRepositoryImpl
 import dev.opux.tubeclient.core.domain.repository.ChannelRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
+import dev.opux.tubeclient.core.domain.repository.SponsorBlockRepository
 import dev.opux.tubeclient.core.domain.repository.SubscriptionRepository
 import dev.opux.tubeclient.core.domain.repository.TrendingRepository
 import dev.opux.tubeclient.core.domain.repository.VideoRepository
@@ -45,4 +47,8 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindSubscriptionRepository(impl: SubscriptionRepositoryImpl): SubscriptionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSponsorBlockRepository(impl: SponsorBlockRepositoryImpl): SponsorBlockRepository
 }

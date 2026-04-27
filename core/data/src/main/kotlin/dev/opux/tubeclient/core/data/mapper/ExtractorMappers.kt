@@ -84,6 +84,11 @@ fun StreamInfo.toDetail(): VideoDetail {
 private fun NpVideoStream.toDomain(): VideoStream {
     val res = getResolution()
     val height = res?.replace(Regex("[^0-9]"), "")?.toIntOrNull() ?: 0
+    // NewPipe still exposes the public `isVideoOnly` field but flagged it deprecated in
+    // 0.26+; the matching getter `isVideoOnly()` is the supported accessor. Force the
+    // method form so we don't lean on the deprecated field path.
+    @Suppress("DEPRECATION")
+    val videoOnly = isVideoOnly
     return VideoStream(
         url = content,
         mimeType = format?.mimeType,
@@ -93,7 +98,7 @@ private fun NpVideoStream.toDomain(): VideoStream {
         bitrate = bitrate,
         framerate = fps,
         codec = codec.takeUnless { it.isNullOrBlank() },
-        isAdaptive = !isVideoOnly,
+        isAdaptive = !videoOnly,
     )
 }
 

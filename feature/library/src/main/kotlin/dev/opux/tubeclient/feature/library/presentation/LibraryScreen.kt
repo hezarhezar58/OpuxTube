@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
@@ -61,6 +62,7 @@ import dev.opux.tubeclient.core.domain.model.DownloadedVideo
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.SponsorBlockCategory
 import dev.opux.tubeclient.core.domain.model.Subscription
+import dev.opux.tubeclient.core.domain.model.ThemeMode
 import dev.opux.tubeclient.core.domain.model.WatchHistoryEntry
 import dev.opux.tubeclient.core.ui.component.HistoryCard
 import dev.opux.tubeclient.core.ui.util.formatViewCount
@@ -188,7 +190,9 @@ fun LibraryScreen(
                     )
                     else -> SettingsTab(
                         enabled = state.sponsorBlockEnabled,
+                        themeMode = state.themeMode,
                         onToggleCategory = viewModel::onToggleCategory,
+                        onSelectThemeMode = viewModel::onSelectThemeMode,
                     )
                 }
             }
@@ -567,13 +571,40 @@ private fun Long.formatBytes(): String {
 @Composable
 private fun SettingsTab(
     enabled: Set<SponsorBlockCategory>,
+    themeMode: ThemeMode,
     onToggleCategory: (SponsorBlockCategory, Boolean) -> Unit,
+    onSelectThemeMode: (ThemeMode) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
+        item(key = "theme_header") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = "Tema",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "Uygulama görünümünü seç",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        items(items = ThemeMode.entries, key = { "theme_${it.name}" }) { mode ->
+            ThemeModeRow(
+                mode = mode,
+                selected = mode == themeMode,
+                onSelect = { onSelectThemeMode(mode) },
+            )
+        }
         item(key = "sponsorblock_header") {
             Column(
                 modifier = Modifier
@@ -602,6 +633,34 @@ private fun SettingsTab(
                 onToggle = { onToggleCategory(category, it) },
             )
         }
+    }
+}
+
+@Composable
+private fun ThemeModeRow(
+    mode: ThemeMode,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onSelect)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .testTag("library_theme_${mode.name.lowercase()}"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = onSelect)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = when (mode) {
+                ThemeMode.LIGHT -> "Açık"
+                ThemeMode.DARK -> "Koyu"
+                ThemeMode.SYSTEM -> "Sistem"
+            },
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 

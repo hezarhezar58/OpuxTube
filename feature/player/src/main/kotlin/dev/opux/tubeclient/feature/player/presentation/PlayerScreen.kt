@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -66,6 +67,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import dev.opux.tubeclient.core.ui.util.LocalIsInPipMode
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.platform.LocalContext
@@ -76,6 +78,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
+import dev.opux.tubeclient.core.domain.model.Comment
 import dev.opux.tubeclient.core.domain.model.DownloadStatus
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.VideoDetail
@@ -99,6 +102,7 @@ fun PlayerScreen(
     val player by viewModel.playerFlow.collectAsStateWithLifecycle()
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
     val downloadStatus by viewModel.downloadStatus.collectAsStateWithLifecycle()
+    val commentsState by viewModel.comments.collectAsStateWithLifecycle()
     val isInPip = LocalIsInPipMode.current
     val snackbarHostState = remember { SnackbarHostState() }
     var showPlaylistSheet by remember { mutableStateOf(false) }
@@ -251,7 +255,26 @@ fun PlayerScreen(
                     }
                 },
                 actions = {
-                    if (uiState.detail != null) {
+                    val detail = uiState.detail
+                    if (detail != null) {
+                        IconButton(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, detail.url)
+                                    putExtra(Intent.EXTRA_SUBJECT, detail.title)
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(intent, "Paylaş"),
+                                )
+                            },
+                            modifier = Modifier.testTag("player_share"),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = "Paylaş",
+                            )
+                        }
                         IconButton(
                             onClick = viewModel::onDownload,
                             enabled = downloadStatus !is DownloadStatus.InProgress &&
@@ -314,6 +337,7 @@ fun PlayerScreen(
                 )
                 uiState.detail != null -> DetailContent(
                     detail = uiState.detail!!,
+                    comments = commentsState,
                     onRelatedClick = onRelatedClick,
                     onChannelClick = onChannelClick,
                 )
@@ -603,6 +627,7 @@ private fun VideoSurface(
 @Composable
 private fun DetailContent(
     detail: VideoDetail,
+    comments: CommentsUiState,
     onRelatedClick: (VideoPreview) -> Unit,
     onChannelClick: (String) -> Unit,
 ) {
@@ -653,6 +678,9 @@ private fun DetailContent(
                 }
             }
         }
+        item(key = "comments_header") {
+            CommentsSection(state = comments)
+        }
         if (detail.relatedVideos.isNotEmpty()) {
             item {
                 Text(
@@ -675,6 +703,127 @@ private fun DetailContent(
         }
     }
 }
+
+@Composable
+private fun CommentsSection(state: CommentsUiState) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .testTag("player_comments"),
+    ) {
+        Text(
+            text = if (state.items.isEmpty()) "Yorumlar" else "Yorumlar (${state.items.size})",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(modifier = Modifier.size(4.dp))
+        when {
+            state.isLoading -> Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Yorumlar yükleniyor…",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            state.error != null -> Text(
+                text = state.error,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+            state.items.isEmpty() -> Text(
+                text = "Yorum bulunamadı.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            else -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                state.items.take(MAX_COMMENT_PREVIEW).forEachIndexed { index, comment ->
+                    CommentRow(
+                        comment = comment,
+                        modifier = Modifier.testTag("player_comment_$index"),
+                    )
+                }
+                if (state.items.size > MAX_COMMENT_PREVIEW) {
+                    Text(
+                        text = "+ ${state.items.size - MAX_COMMENT_PREVIEW} yorum daha",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommentRow(comment: Comment, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        AsyncImage(
+            model = comment.authorAvatarUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = comment.authorName,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                val uploadedAt = comment.uploadedAt
+                if (!uploadedAt.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = uploadedAt,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (comment.isPinned) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "📌",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
+            Text(
+                text = comment.text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (comment.likeCount > 0 || comment.replyCount > 0) {
+                Text(
+                    text = buildString {
+                        if (comment.likeCount > 0) append("👍 ${comment.likeCount}")
+                        if (comment.replyCount > 0) {
+                            if (isNotEmpty()) append(" · ")
+                            append("${comment.replyCount} yanıt")
+                        }
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+private const val MAX_COMMENT_PREVIEW = 8
 
 @Composable
 private fun ChannelChip(

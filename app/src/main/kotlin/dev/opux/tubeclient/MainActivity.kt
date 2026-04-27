@@ -18,6 +18,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player
 import dagger.hilt.android.AndroidEntryPoint
+import dev.opux.tubeclient.core.domain.model.ThemeMode
+import dev.opux.tubeclient.core.domain.preferences.AppPreferences
 import dev.opux.tubeclient.core.player.MediaPlayerController
 import dev.opux.tubeclient.core.ui.theme.OpuxTubeTheme
 import dev.opux.tubeclient.core.ui.util.LocalIsInPipMode
@@ -36,6 +39,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var controller: MediaPlayerController
+    @Inject lateinit var appPreferences: AppPreferences
 
     private var isInPipMode by mutableStateOf(false)
 
@@ -78,7 +82,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            OpuxTubeTheme {
+            val themeMode by appPreferences.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
+            OpuxTubeTheme(themeMode = themeMode) {
                 CompositionLocalProvider(LocalIsInPipMode provides isInPipMode) {
                     Surface(modifier = Modifier.fillMaxSize()) {
                         OpuxNavGraph()

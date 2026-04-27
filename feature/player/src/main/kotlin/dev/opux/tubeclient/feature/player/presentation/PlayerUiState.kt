@@ -1,5 +1,6 @@
 package dev.opux.tubeclient.feature.player.presentation
 
+import dev.opux.tubeclient.core.domain.model.Comment
 import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoStream
 
@@ -8,6 +9,13 @@ data class PlayerUiState(
     val detail: VideoDetail? = null,
     val error: String? = null,
     val qualityOverride: VideoStream? = null,
+)
+
+data class CommentsUiState(
+    val isLoading: Boolean = false,
+    val items: List<Comment> = emptyList(),
+    val disabled: Boolean = false,
+    val error: String? = null,
 )
 
 data class QualityOption(

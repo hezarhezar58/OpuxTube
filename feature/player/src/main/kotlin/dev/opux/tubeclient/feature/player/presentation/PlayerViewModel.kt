@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.opux.tubeclient.core.domain.model.Comment
 import dev.opux.tubeclient.core.domain.model.DownloadStatus
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.SkipSegment
@@ -14,6 +15,7 @@ import dev.opux.tubeclient.core.domain.repository.DownloadActions
 import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.FindDownloadUseCase
+import dev.opux.tubeclient.core.domain.usecase.GetCommentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSkipSegmentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetVideoDetailsUseCase
@@ -60,6 +62,7 @@ class PlayerViewModel @Inject constructor(
     private val createPlaylist: CreatePlaylistUseCase,
     private val findDownload: FindDownloadUseCase,
     private val downloadActions: DownloadActions,
+    private val getComments: GetCommentsUseCase,
 ) : ViewModel() {
 
     private val videoUrl: String = run {
@@ -74,6 +77,9 @@ class PlayerViewModel @Inject constructor(
 
     val playbackState: StateFlow<PlaybackState> = controller.state
     val playerFlow: StateFlow<Player?> = controller.playerFlow
+
+    private val _comments = MutableStateFlow<CommentsUiState>(CommentsUiState())
+    val comments: StateFlow<CommentsUiState> = _comments.asStateFlow()
 
     private val _skipEvents = MutableSharedFlow<SkippedSegmentEvent>(
         replay = 0,
@@ -142,6 +148,7 @@ class PlayerViewModel @Inject constructor(
                     recordWatch(detail, progressMs = resumeAt)
                     startProgressTicker(detail.id)
                     fetchAndApplySkipSegments(detail.id)
+                    fetchComments(detail.url)
                 }
                 .onFailure { t ->
                     _uiState.value = PlayerUiState(
@@ -173,6 +180,24 @@ class PlayerViewModel @Inject constructor(
                     updateProgress(videoId, pos)
                 }
             }
+        }
+    }
+
+    private fun fetchComments(videoUrl: String) {
+        _comments.value = CommentsUiState(isLoading = true)
+        viewModelScope.launch {
+            getComments(videoUrl)
+                .onSuccess { items ->
+                    _comments.value = CommentsUiState(
+                        isLoading = false,
+                        items = items,
+                        disabled = false,
+                    )
+                }
+                .onFailure { t ->
+                    Timber.w(t, "Comments fetch failed for %s", videoUrl)
+                    _comments.value = CommentsUiState(isLoading = false, error = "Yorumlar alınamadı")
+                }
         }
     }
 

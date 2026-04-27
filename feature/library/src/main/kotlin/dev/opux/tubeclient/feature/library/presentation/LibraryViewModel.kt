@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.opux.tubeclient.core.domain.model.SponsorBlockCategory
+import dev.opux.tubeclient.core.domain.model.ThemeMode
+import dev.opux.tubeclient.core.domain.preferences.AppPreferences
 import dev.opux.tubeclient.core.domain.preferences.SponsorBlockPreferences
 import dev.opux.tubeclient.core.domain.repository.DownloadActions
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
@@ -33,6 +35,7 @@ class LibraryViewModel @Inject constructor(
     private val deletePlaylistUseCase: DeletePlaylistUseCase,
     private val deleteDownload: DeleteDownloadUseCase,
     private val sponsorBlockPreferences: SponsorBlockPreferences,
+    private val appPreferences: AppPreferences,
 ) : ViewModel() {
 
     val state: StateFlow<LibraryUiState> =
@@ -44,8 +47,9 @@ class LibraryViewModel @Inject constructor(
             combine(
                 sponsorBlockPreferences.enabledCategories,
                 downloadActions.statuses,
-            ) { enabled, statuses -> enabled to statuses },
-        ) { history, subs, playlists, downloads, (enabled, statuses) ->
+                appPreferences.themeMode,
+            ) { enabled, statuses, theme -> Triple(enabled, statuses, theme) },
+        ) { history, subs, playlists, downloads, (enabled, statuses, theme) ->
             LibraryUiState(
                 history = history,
                 subscriptions = subs,
@@ -53,6 +57,7 @@ class LibraryViewModel @Inject constructor(
                 downloads = downloads,
                 downloadStatuses = statuses,
                 sponsorBlockEnabled = enabled,
+                themeMode = theme,
                 isLoading = false,
             )
         }.stateIn(
@@ -83,5 +88,9 @@ class LibraryViewModel @Inject constructor(
 
     fun onDeleteDownload(videoId: String) {
         viewModelScope.launch { deleteDownload(videoId) }
+    }
+
+    fun onSelectThemeMode(mode: ThemeMode) {
+        viewModelScope.launch { appPreferences.setThemeMode(mode) }
     }
 }

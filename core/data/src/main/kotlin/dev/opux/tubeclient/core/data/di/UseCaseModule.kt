@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.opux.tubeclient.core.domain.repository.ChannelRepository
+import dev.opux.tubeclient.core.domain.repository.CommentRepository
 import dev.opux.tubeclient.core.domain.repository.DownloadRepository
 import dev.opux.tubeclient.core.domain.repository.PlaylistRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
@@ -19,6 +20,7 @@ import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeleteDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeletePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.FindDownloadUseCase
+import dev.opux.tubeclient.core.domain.usecase.GetCommentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelVideosUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
@@ -140,4 +142,8 @@ object UseCaseModule {
     @Provides
     @Singleton
     fun provideDeleteDownloadUseCase(repo: DownloadRepository) = DeleteDownloadUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideGetCommentsUseCase(repo: CommentRepository) = GetCommentsUseCase(repo)
 }

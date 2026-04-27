@@ -19,24 +19,38 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.HighQuality
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,12 +62,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.AsyncImage
 import dev.opux.tubeclient.core.ui.util.LocalIsInPipMode
+import android.app.Activity
+import android.content.pm.ActivityInfo
+import androidx.activity.compose.BackHandler
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
+import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoPreview
+import dev.opux.tubeclient.core.domain.model.VideoStream
 import dev.opux.tubeclient.core.ui.component.VideoCard
 import dev.opux.tubeclient.core.ui.util.formatRelativeUploadDate
 import dev.opux.tubeclient.core.ui.util.formatViewCount
@@ -70,13 +93,62 @@ fun PlayerScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val playback by viewModel.playbackState.collectAsStateWithLifecycle()
     val player by viewModel.playerFlow.collectAsStateWithLifecycle()
+    val playlists by viewModel.playlists.collectAsStateWithLifecycle()
     val isInPip = LocalIsInPipMode.current
     val snackbarHostState = remember { SnackbarHostState() }
+    var showPlaylistSheet by remember { mutableStateOf(false) }
+    var showCreatePlaylistDialog by remember { mutableStateOf(false) }
+    var showQualitySheet by remember { mutableStateOf(false) }
+    var isFullscreen by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    // Snapshot the activity's orientation request the first time we land on this screen so
+    // we can put things back exactly the way we found them on exit. Without this, exiting
+    // fullscreen on devices with auto-rotate disabled can leave the OS pinned to landscape.
+    val initialOrientation = remember {
+        (context as? Activity)?.requestedOrientation
+            ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+    }
+
+    DisposableEffect(isFullscreen) {
+        val activity = context as? Activity
+        val window = activity?.window
+        if (activity != null && window != null) {
+            val insetsController = WindowInsetsControllerCompat(window, window.decorView)
+            if (isFullscreen) {
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER_LANDSCAPE
+                WindowCompat.setDecorFitsSystemWindows(window, false)
+                insetsController.systemBarsBehavior =
+                    WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                insetsController.hide(WindowInsetsCompat.Type.systemBars())
+            } else {
+                activity.requestedOrientation = initialOrientation
+                WindowCompat.setDecorFitsSystemWindows(window, true)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+        onDispose {
+            if (activity != null && window != null) {
+                activity.requestedOrientation = initialOrientation
+                WindowCompat.setDecorFitsSystemWindows(window, true)
+                WindowInsetsControllerCompat(window, window.decorView)
+                    .show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+    BackHandler(enabled = isFullscreen) { isFullscreen = false }
 
     LaunchedEffect(viewModel) {
         viewModel.skipEvents.collect { event ->
             snackbarHostState.showSnackbar(
                 message = "Atlandı: ${event.category.toTurkishLabel()} (${(event.durationMs / 1000L)}s)",
+                duration = SnackbarDuration.Short,
+            )
+        }
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.playlistAddedEvents.collect { name ->
+            snackbarHostState.showSnackbar(
+                message = if (name.isEmpty()) "Listeye eklendi" else "\"$name\" listesine eklendi",
                 duration = SnackbarDuration.Short,
             )
         }
@@ -110,6 +182,45 @@ fun PlayerScreen(
         return
     }
 
+    if (isFullscreen) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(Color.Black),
+        ) {
+            if (player != null) {
+                AndroidView(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("player_surface"),
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            this.player = player
+                            useController = true
+                            controllerAutoShow = true
+                            setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+                        }
+                    },
+                    update = { it.player = player },
+                )
+            }
+            IconButton(
+                onClick = { isFullscreen = false },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp)
+                    .testTag("player_fullscreen_exit"),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.FullscreenExit,
+                    contentDescription = "Tam ekrandan çık",
+                    tint = Color.White,
+                )
+            }
+        }
+        return
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -134,6 +245,28 @@ fun PlayerScreen(
                         )
                     }
                 },
+                actions = {
+                    if (uiState.detail != null) {
+                        IconButton(
+                            onClick = { showQualitySheet = true },
+                            modifier = Modifier.testTag("player_quality"),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.HighQuality,
+                                contentDescription = "Kalite",
+                            )
+                        }
+                        IconButton(
+                            onClick = { showPlaylistSheet = true },
+                            modifier = Modifier.testTag("player_playlist_add"),
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
+                                contentDescription = "Listeye ekle",
+                            )
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -147,7 +280,10 @@ fun PlayerScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            VideoSurface(player = player)
+            VideoSurface(
+                player = player,
+                onEnterFullscreen = { isFullscreen = true },
+            )
 
             when {
                 uiState.isLoading -> CenteredLoading()
@@ -174,10 +310,233 @@ fun PlayerScreen(
             }
         }
     }
+
+    if (showPlaylistSheet) {
+        PlaylistPickerSheet(
+            playlists = playlists,
+            onPick = { id ->
+                viewModel.addCurrentVideoToPlaylist(id)
+                showPlaylistSheet = false
+            },
+            onCreateNew = {
+                showPlaylistSheet = false
+                showCreatePlaylistDialog = true
+            },
+            onDismiss = { showPlaylistSheet = false },
+        )
+    }
+    if (showCreatePlaylistDialog) {
+        NewPlaylistDialog(
+            onConfirm = { name ->
+                viewModel.createPlaylistAndAddCurrent(name)
+                showCreatePlaylistDialog = false
+            },
+            onDismiss = { showCreatePlaylistDialog = false },
+        )
+    }
+    if (showQualitySheet) {
+        val detail = uiState.detail
+        if (detail != null) {
+            QualityPickerSheet(
+                options = buildQualityOptions(detail),
+                selected = uiState.qualityOverride,
+                onPick = { stream ->
+                    viewModel.onSelectQuality(stream)
+                    showQualitySheet = false
+                },
+                onDismiss = { showQualitySheet = false },
+            )
+        }
+    }
+}
+
+private fun buildQualityOptions(detail: VideoDetail): List<QualityOption> {
+    val all = (detail.videoStreams + detail.videoOnlyStreams)
+        .filter { it.height > 0 }
+        .distinctBy { it.height }
+        .sortedByDescending { it.height }
+    return buildList {
+        add(QualityOption(label = "Otomatik", stream = null))
+        addAll(all.map { QualityOption(label = "${it.height}p", stream = it) })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun QualityPickerSheet(
+    options: List<QualityOption>,
+    selected: VideoStream?,
+    onPick: (VideoStream?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.testTag("player_quality_sheet"),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Kalite",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+            HorizontalDivider()
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                itemsIndexed(options, key = { _, opt -> opt.label }) { index, option ->
+                    val isSelected = option.stream?.url == selected?.url
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onPick(option.stream) }
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
+                            .testTag("player_quality_$index"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = option.label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (isSelected) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlaylistPickerSheet(
+    playlists: List<Playlist>,
+    onPick: (Long) -> Unit,
+    onCreateNew: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.testTag("player_playlist_sheet"),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Listeye ekle",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+            HorizontalDivider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onCreateNew)
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .testTag("player_playlist_create_new"),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = null,
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Yeni liste oluştur",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            HorizontalDivider()
+            if (playlists.isEmpty()) {
+                Text(
+                    text = "Henüz liste yok",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                )
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    itemsIndexed(playlists, key = { _, p -> p.id }) { index, p ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onPick(p.id) }
+                                .padding(horizontal = 16.dp, vertical = 14.dp)
+                                .testTag("player_playlist_pick_$index"),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = p.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    text = if (p.itemCount == 0) "Boş" else "${p.itemCount} video",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+        }
+    }
 }
 
 @Composable
-private fun VideoSurface(player: Player?, modifier: Modifier = Modifier) {
+private fun NewPlaylistDialog(
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Yeni liste") },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                singleLine = true,
+                label = { Text("Liste adı") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("player_playlist_create_input"),
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(name) },
+                enabled = name.isNotBlank(),
+                modifier = Modifier.testTag("player_playlist_create_confirm"),
+            ) { Text("Oluştur ve ekle") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("İptal") }
+        },
+    )
+}
+
+@Composable
+private fun VideoSurface(
+    player: Player?,
+    onEnterFullscreen: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -202,6 +561,19 @@ private fun VideoSurface(player: Player?, modifier: Modifier = Modifier) {
                 // Player is owned by the playback service via MediaController; the
                 // PlayerView is just a remote-control surface, never release the player here.
                 onDispose { }
+            }
+            IconButton(
+                onClick = onEnterFullscreen,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(8.dp)
+                    .testTag("player_fullscreen_enter"),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Fullscreen,
+                    contentDescription = "Tam ekran",
+                    tint = Color.White,
+                )
             }
         }
     }

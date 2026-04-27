@@ -5,13 +5,17 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.opux.tubeclient.core.domain.repository.ChannelRepository
+import dev.opux.tubeclient.core.domain.repository.PlaylistRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
 import dev.opux.tubeclient.core.domain.repository.SponsorBlockRepository
 import dev.opux.tubeclient.core.domain.repository.SubscriptionRepository
 import dev.opux.tubeclient.core.domain.repository.TrendingRepository
 import dev.opux.tubeclient.core.domain.repository.VideoRepository
 import dev.opux.tubeclient.core.domain.repository.WatchHistoryRepository
+import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
+import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.DeletePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelVideosUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
@@ -21,7 +25,10 @@ import dev.opux.tubeclient.core.domain.usecase.GetTrendingUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetVideoDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.IsSubscribedUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistEntriesUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistsUseCase
 import dev.opux.tubeclient.core.domain.usecase.RecordWatchEventUseCase
+import dev.opux.tubeclient.core.domain.usecase.RemoveVideoFromPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.SearchVideosUseCase
 import dev.opux.tubeclient.core.domain.usecase.SubscribeChannelUseCase
 import dev.opux.tubeclient.core.domain.usecase.UnsubscribeChannelUseCase
@@ -91,4 +98,30 @@ object UseCaseModule {
     @Provides
     @Singleton
     fun provideGetSkipSegmentsUseCase(repo: SponsorBlockRepository) = GetSkipSegmentsUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideObservePlaylistsUseCase(repo: PlaylistRepository) = ObservePlaylistsUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideObservePlaylistEntriesUseCase(repo: PlaylistRepository) =
+        ObservePlaylistEntriesUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideCreatePlaylistUseCase(repo: PlaylistRepository) = CreatePlaylistUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideDeletePlaylistUseCase(repo: PlaylistRepository) = DeletePlaylistUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideAddVideoToPlaylistUseCase(repo: PlaylistRepository) = AddVideoToPlaylistUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideRemoveVideoFromPlaylistUseCase(repo: PlaylistRepository) =
+        RemoveVideoFromPlaylistUseCase(repo)
 }

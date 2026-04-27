@@ -13,6 +13,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.opux.tubeclient.core.domain.model.VideoDetail
+import dev.opux.tubeclient.core.domain.model.VideoStream
 import dev.opux.tubeclient.core.player.model.PlaybackState
 import dev.opux.tubeclient.core.player.service.OpuxPlaybackService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,8 +87,12 @@ class ExoMediaPlayerController @Inject constructor(
         }, ContextCompat.getMainExecutor(context))
     }
 
-    override fun play(detail: VideoDetail, startPositionMs: Long) {
-        val selection = streamSelector.select(detail) ?: run {
+    override fun play(
+        detail: VideoDetail,
+        startPositionMs: Long,
+        qualityOverride: VideoStream?,
+    ) {
+        val selection = streamSelector.select(detail, qualityOverride) ?: run {
             _state.update { it.copy(error = "Oynatılabilir akış bulunamadı") }
             return
         }
@@ -95,7 +100,7 @@ class ExoMediaPlayerController @Inject constructor(
         if (ctrl == null) {
             // Queue: replay this once the connection succeeds.
             controllerFuture?.addListener(
-                { play(detail, startPositionMs) },
+                { play(detail, startPositionMs, qualityOverride) },
                 ContextCompat.getMainExecutor(context),
             )
             return

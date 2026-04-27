@@ -9,7 +9,19 @@ import javax.inject.Singleton
 @Singleton
 class StreamSelector @Inject constructor() {
 
-    fun select(detail: VideoDetail): Selection? {
+    fun select(detail: VideoDetail, override: VideoStream? = null): Selection? {
+        if (override != null) {
+            // Honor user-picked quality. If the override is a progressive stream
+            // (matches one in `videoStreams`), use it directly; otherwise treat it
+            // as a video-only track and pair with the best audio.
+            val isProgressive = detail.videoStreams.any { it.url == override.url }
+            if (isProgressive) return Selection.Progressive(override)
+            val audio = detail.audioStreams.maxByOrNull { it.bitrate }
+            return when (audio) {
+                null -> Selection.VideoOnly(override)
+                else -> Selection.Merged(override, audio)
+            }
+        }
         // Prefer a progressive (combined audio+video) stream when available — single
         // HTTP source is simpler and avoids the MergingMediaSource A/V drift class of bugs.
         val progressive = detail.videoStreams

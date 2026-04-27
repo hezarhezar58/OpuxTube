@@ -25,6 +25,8 @@ import dev.opux.tubeclient.feature.channel.navigation.navigateToChannel
 import dev.opux.tubeclient.feature.home.navigation.HomeRoute
 import dev.opux.tubeclient.feature.home.navigation.homeDestination
 import dev.opux.tubeclient.feature.library.navigation.libraryDestination
+import dev.opux.tubeclient.feature.library.navigation.navigateToPlaylist
+import dev.opux.tubeclient.feature.library.navigation.playlistDetailDestination
 import dev.opux.tubeclient.feature.player.navigation.navigateToPlayer
 import dev.opux.tubeclient.feature.player.navigation.playerDestination
 import dev.opux.tubeclient.feature.search.navigation.searchDestination
@@ -55,6 +57,11 @@ fun OpuxNavGraph() {
             libraryDestination(
                 onHistoryClick = { entry -> navController.navigateToPlayer(entry.videoUrl) },
                 onSubscriptionClick = { sub -> navController.navigateToChannel(sub.channelUrl) },
+                onPlaylistClick = { playlist -> navController.navigateToPlaylist(playlist.id) },
+            )
+            playlistDetailDestination(
+                onBack = { navController.popBackStack() },
+                onEntryClick = { entry -> navController.navigateToPlayer(entry.videoUrl) },
             )
             channelDestination(
                 onBack = { navController.popBackStack() },

@@ -5,10 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.SkipSegment
+import dev.opux.tubeclient.core.domain.model.VideoStream
+import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSkipSegmentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetVideoDetailsUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistsUseCase
 import dev.opux.tubeclient.core.domain.usecase.RecordWatchEventUseCase
 import dev.opux.tubeclient.core.domain.usecase.UpdateWatchProgressUseCase
 import dev.opux.tubeclient.core.player.MediaPlayerController
@@ -24,9 +29,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -43,6 +50,9 @@ class PlayerViewModel @Inject constructor(
     private val updateProgress: UpdateWatchProgressUseCase,
     private val getLastPosition: GetLastPositionUseCase,
     private val getSkipSegments: GetSkipSegmentsUseCase,
+    observePlaylists: ObservePlaylistsUseCase,
+    private val addVideoToPlaylist: AddVideoToPlaylistUseCase,
+    private val createPlaylist: CreatePlaylistUseCase,
 ) : ViewModel() {
 
     private val videoUrl: String = run {
@@ -63,6 +73,18 @@ class PlayerViewModel @Inject constructor(
         extraBufferCapacity = 4,
     )
     val skipEvents: SharedFlow<SkippedSegmentEvent> = _skipEvents.asSharedFlow()
+
+    private val _playlistAddedEvents = MutableSharedFlow<String>(
+        replay = 0,
+        extraBufferCapacity = 4,
+    )
+    val playlistAddedEvents: SharedFlow<String> = _playlistAddedEvents.asSharedFlow()
+
+    val playlists: StateFlow<List<Playlist>> = observePlaylists().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
     private var progressJob: Job? = null
     private var skipperJob: Job? = null
@@ -155,6 +177,37 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun retry() = loadAndPlay()
+
+    fun onSelectQuality(stream: VideoStream?) {
+        val detail = _uiState.value.detail ?: return
+        val current = controller.playerFlow.value?.currentPosition ?: 0L
+        _uiState.value = _uiState.value.copy(qualityOverride = stream)
+        controller.play(detail, startPositionMs = current, qualityOverride = stream)
+    }
+
+    fun addCurrentVideoToPlaylist(playlistId: Long) {
+        val detail = _uiState.value.detail ?: return
+        val playlistName = playlists.value.firstOrNull { it.id == playlistId }?.name ?: ""
+        viewModelScope.launch {
+            runCatching { addVideoToPlaylist(playlistId, detail) }
+                .onSuccess { _playlistAddedEvents.tryEmit(playlistName) }
+                .onFailure { Timber.w(it, "Add to playlist failed") }
+        }
+    }
+
+    fun createPlaylistAndAddCurrent(name: String) {
+        val trimmed = name.trim()
+        if (trimmed.isEmpty()) return
+        val detail = _uiState.value.detail ?: return
+        viewModelScope.launch {
+            runCatching {
+                val id = createPlaylist(trimmed)
+                addVideoToPlaylist(id, detail)
+            }
+                .onSuccess { _playlistAddedEvents.tryEmit(trimmed) }
+                .onFailure { Timber.w(it, "Create+add playlist failed") }
+        }
+    }
 
     fun togglePlayPause() {
         if (controller.state.value.isPlaying) controller.pause() else controller.resume()

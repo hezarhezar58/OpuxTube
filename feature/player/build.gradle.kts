@@ -32,6 +32,7 @@ dependencies {
     implementation(project(":core:player"))
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.bundles.lifecycle)
 
     implementation(platform(libs.androidx.compose.bom))

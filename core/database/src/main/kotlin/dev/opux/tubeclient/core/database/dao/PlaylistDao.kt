@@ -15,6 +15,15 @@ interface PlaylistDao {
     @Query("SELECT * FROM playlists ORDER BY updatedAt DESC")
     fun observePlaylists(): Flow<List<PlaylistEntity>>
 
+    @Query("SELECT playlistId, COUNT(*) AS count FROM playlist_entries GROUP BY playlistId")
+    fun observeEntryCounts(): Flow<List<PlaylistEntryCount>>
+
+    @Query("SELECT COALESCE(MAX(position), -1) FROM playlist_entries WHERE playlistId = :playlistId")
+    suspend fun maxPosition(playlistId: Long): Int
+
+    @Query("UPDATE playlists SET updatedAt = :timestamp WHERE id = :playlistId")
+    suspend fun touchPlaylist(playlistId: Long, timestamp: Long)
+
     @Query("SELECT * FROM playlist_entries WHERE playlistId = :playlistId ORDER BY position")
     fun observeEntries(playlistId: Long): Flow<List<PlaylistEntryEntity>>
 
@@ -35,3 +44,8 @@ interface PlaylistDao {
     @Query("DELETE FROM playlists WHERE id = :playlistId")
     suspend fun deletePlaylist(playlistId: Long)
 }
+
+data class PlaylistEntryCount(
+    val playlistId: Long,
+    val count: Int,
+)

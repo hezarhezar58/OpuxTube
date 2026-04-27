@@ -115,6 +115,7 @@ class PlayerViewModel @Inject constructor(
 
     private var progressJob: Job? = null
     private var skipperJob: Job? = null
+    private var sleepTimerJob: Job? = null
 
     private var segments: List<SkipSegment> = emptyList()
     private val recentlySkippedAt: MutableMap<String, Long> = mutableMapOf()
@@ -311,6 +312,21 @@ class PlayerViewModel @Inject constructor(
             }
                 .onSuccess { _playlistAddedEvents.tryEmit(trimmed) }
                 .onFailure { Timber.w(it, "Create+add playlist failed") }
+        }
+    }
+
+    fun onSetSleepTimer(durationMs: Long?) {
+        sleepTimerJob?.cancel()
+        if (durationMs == null || durationMs <= 0L) {
+            _uiState.value = _uiState.value.copy(sleepTimerEndAtMs = null)
+            return
+        }
+        val endAt = System.currentTimeMillis() + durationMs
+        _uiState.value = _uiState.value.copy(sleepTimerEndAtMs = endAt)
+        sleepTimerJob = viewModelScope.launch {
+            delay(durationMs)
+            controller.pause()
+            _uiState.value = _uiState.value.copy(sleepTimerEndAtMs = null)
         }
     }
 

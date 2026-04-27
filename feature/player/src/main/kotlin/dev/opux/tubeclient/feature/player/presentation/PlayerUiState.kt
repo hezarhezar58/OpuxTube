@@ -10,6 +10,8 @@ data class PlayerUiState(
     val error: String? = null,
     val qualityOverride: VideoStream? = null,
     val playbackSpeed: Float = 1.0f,
+    /** When non-null, the wall-clock instant (epoch ms) at which playback should pause. */
+    val sleepTimerEndAtMs: Long? = null,
 )
 
 data class CommentsUiState(

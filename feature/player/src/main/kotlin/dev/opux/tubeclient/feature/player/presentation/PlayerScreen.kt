@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Speed
@@ -111,6 +112,7 @@ fun PlayerScreen(
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
     var showQualitySheet by remember { mutableStateOf(false) }
     var showSpeedSheet by remember { mutableStateOf(false) }
+    var showSleepSheet by remember { mutableStateOf(false) }
     var isFullscreen by remember { mutableStateOf(false) }
     val context = LocalContext.current
     // Snapshot the activity's orientation request the first time we land on this screen so
@@ -295,6 +297,20 @@ fun PlayerScreen(
                             )
                         }
                         IconButton(
+                            onClick = { showSleepSheet = true },
+                            modifier = Modifier.testTag("player_sleep_timer"),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Bedtime,
+                                contentDescription = "Uyku zamanlayıcısı",
+                                tint = if (uiState.sleepTimerEndAtMs != null) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    androidx.compose.material3.LocalContentColor.current
+                                },
+                            )
+                        }
+                        IconButton(
                             onClick = { showSpeedSheet = true },
                             modifier = Modifier.testTag("player_speed"),
                         ) {
@@ -416,6 +432,86 @@ fun PlayerScreen(
             },
             onDismiss = { showSpeedSheet = false },
         )
+    }
+    if (showSleepSheet) {
+        SleepTimerSheet(
+            activeEndAtMs = uiState.sleepTimerEndAtMs,
+            onPick = { durationMs ->
+                viewModel.onSetSleepTimer(durationMs)
+                showSleepSheet = false
+            },
+            onDismiss = { showSleepSheet = false },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SleepTimerSheet(
+    activeEndAtMs: Long?,
+    onPick: (Long?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val options: List<Pair<String, Long?>> = listOf(
+        "Kapalı" to null,
+        "5 dakika" to 5 * 60_000L,
+        "15 dakika" to 15 * 60_000L,
+        "30 dakika" to 30 * 60_000L,
+        "60 dakika" to 60 * 60_000L,
+    )
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.testTag("player_sleep_sheet"),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Uyku zamanlayıcısı",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+            if (activeEndAtMs != null) {
+                val remainingMin = ((activeEndAtMs - System.currentTimeMillis()).coerceAtLeast(0L) /
+                    60_000L).toInt()
+                Text(
+                    text = "Kalan: ~${remainingMin} dakika",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
+            HorizontalDivider()
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                itemsIndexed(options, key = { _, opt -> opt.first }) { index, (label, durationMs) ->
+                    val isActive = durationMs == null && activeEndAtMs == null
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onPick(durationMs) }
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
+                            .testTag("player_sleep_$index"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (isActive) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
+        }
     }
 }
 

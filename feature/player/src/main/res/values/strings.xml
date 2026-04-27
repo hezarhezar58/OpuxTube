@@ -33,6 +33,18 @@
     <!-- Skip toast -->
     <string name="player_skipped_segment">Atlandı: %1$s (%2$ds)</string>
 
+    <!-- SponsorBlock category labels -->
+    <string name="player_segment_sponsor">Sponsor</string>
+    <string name="player_segment_intro">İntro</string>
+    <string name="player_segment_outro">Bitiş</string>
+    <string name="player_segment_selfpromo">Kanal reklamı</string>
+    <string name="player_segment_interaction">Etkileşim</string>
+    <string name="player_segment_music_offtopic">Konu dışı müzik</string>
+    <string name="player_segment_preview">Önizleme</string>
+
+    <!-- Errors -->
+    <string name="player_replies_failed">Yanıtlar alınamadı</string>
+
     <!-- Playlist sheet -->
     <string name="player_playlist_sheet_title">Listeye ekle</string>
     <string name="player_playlist_create_new">Yeni liste oluştur</string>

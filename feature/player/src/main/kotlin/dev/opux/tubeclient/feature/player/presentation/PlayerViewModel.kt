@@ -1,10 +1,12 @@
 package dev.opux.tubeclient.feature.player.presentation
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.opux.tubeclient.core.domain.model.Comment
 import dev.opux.tubeclient.core.domain.model.DownloadStatus
 import dev.opux.tubeclient.core.domain.model.Playlist
@@ -25,6 +27,7 @@ import dev.opux.tubeclient.core.domain.usecase.RecordWatchEventUseCase
 import dev.opux.tubeclient.core.domain.usecase.UpdateWatchProgressUseCase
 import dev.opux.tubeclient.core.player.MediaPlayerController
 import dev.opux.tubeclient.core.player.model.PlaybackState
+import dev.opux.tubeclient.feature.player.R
 import dev.opux.tubeclient.feature.player.navigation.PlayerVideoUrlArg
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +54,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle,
     private val getDetails: GetVideoDetailsUseCase,
     private val controller: MediaPlayerController,
@@ -159,7 +163,7 @@ class PlayerViewModel @Inject constructor(
                 .onFailure { t ->
                     _uiState.value = PlayerUiState(
                         isLoading = false,
-                        error = t.message ?: "Video yüklenemedi",
+                        error = t.message ?: appContext.getString(R.string.player_load_failed),
                     )
                 }
         }
@@ -203,7 +207,10 @@ class PlayerViewModel @Inject constructor(
                 }
                 .onFailure { t ->
                     Timber.w(t, "Comments fetch failed for %s", videoUrl)
-                    _comments.value = CommentsUiState(isLoading = false, error = "Yorumlar alınamadı")
+                    _comments.value = CommentsUiState(
+                        isLoading = false,
+                        error = appContext.getString(R.string.player_comments_failed),
+                    )
                 }
         }
     }
@@ -258,8 +265,11 @@ class PlayerViewModel @Inject constructor(
                         }
                         .onFailure { t ->
                             Timber.w(t, "Replies fetch failed for %s", commentId)
-                            _replies.value = _replies.value +
-                                (commentId to RepliesState.Failed(t.message ?: "Yanıtlar alınamadı"))
+                            _replies.value = _replies.value + (
+                                commentId to RepliesState.Failed(
+                                    t.message ?: appContext.getString(R.string.player_replies_failed),
+                                )
+                            )
                         }
                 }
             }

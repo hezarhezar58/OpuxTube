@@ -28,6 +28,16 @@
 
     <string name="player_skipped_segment">Skipped: %1$s (%2$ds)</string>
 
+    <string name="player_segment_sponsor">Sponsor</string>
+    <string name="player_segment_intro">Intro</string>
+    <string name="player_segment_outro">Outro</string>
+    <string name="player_segment_selfpromo">Self-promo</string>
+    <string name="player_segment_interaction">Interaction</string>
+    <string name="player_segment_music_offtopic">Off-topic music</string>
+    <string name="player_segment_preview">Preview</string>
+
+    <string name="player_replies_failed">Replies unavailable</string>
+
     <string name="player_playlist_sheet_title">Add to playlist</string>
     <string name="player_playlist_create_new">Create new playlist</string>
     <string name="player_playlist_empty">No playlists yet</string>

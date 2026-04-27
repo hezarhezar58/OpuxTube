@@ -1,8 +1,10 @@
 package dev.opux.tubeclient.feature.player.presentation
 
+import android.content.Context
 import dev.opux.tubeclient.core.domain.model.Comment
 import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoStream
+import dev.opux.tubeclient.feature.player.R
 
 data class PlayerUiState(
     val isLoading: Boolean = true,
@@ -37,13 +39,13 @@ data class SkippedSegmentEvent(
     val durationMs: Long,
 )
 
-internal fun String.toTurkishLabel(): String = when (this) {
-    "sponsor" -> "Sponsor"
-    "intro" -> "İntro"
-    "outro" -> "Bitiş"
-    "selfpromo" -> "Kanal reklamı"
-    "interaction" -> "Etkileşim"
-    "music_offtopic" -> "Konu dışı müzik"
-    "preview" -> "Önizleme"
-    else -> this
+internal fun resolveSegmentLabel(context: Context, category: String): String = when (category) {
+    "sponsor" -> context.getString(R.string.player_segment_sponsor)
+    "intro" -> context.getString(R.string.player_segment_intro)
+    "outro" -> context.getString(R.string.player_segment_outro)
+    "selfpromo" -> context.getString(R.string.player_segment_selfpromo)
+    "interaction" -> context.getString(R.string.player_segment_interaction)
+    "music_offtopic" -> context.getString(R.string.player_segment_music_offtopic)
+    "preview" -> context.getString(R.string.player_segment_preview)
+    else -> category
 }

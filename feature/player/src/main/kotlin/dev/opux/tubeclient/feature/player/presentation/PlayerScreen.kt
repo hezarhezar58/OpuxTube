@@ -158,7 +158,7 @@ fun PlayerScreen(
             snackbarHostState.showSnackbar(
                 message = context.getString(
                     R.string.player_skipped_segment,
-                    event.category.toTurkishLabel(),
+                    resolveSegmentLabel(context, event.category),
                     (event.durationMs / 1000L).toInt(),
                 ),
                 duration = SnackbarDuration.Short,

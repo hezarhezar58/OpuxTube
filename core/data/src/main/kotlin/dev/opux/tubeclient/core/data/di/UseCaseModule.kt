@@ -8,6 +8,7 @@ import dev.opux.tubeclient.core.domain.repository.ChannelRepository
 import dev.opux.tubeclient.core.domain.repository.CommentRepository
 import dev.opux.tubeclient.core.domain.repository.DownloadRepository
 import dev.opux.tubeclient.core.domain.repository.PlaylistRepository
+import dev.opux.tubeclient.core.domain.repository.SearchHistoryRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
 import dev.opux.tubeclient.core.domain.repository.SponsorBlockRepository
 import dev.opux.tubeclient.core.domain.repository.SubscriptionRepository
@@ -15,7 +16,9 @@ import dev.opux.tubeclient.core.domain.repository.TrendingRepository
 import dev.opux.tubeclient.core.domain.repository.VideoRepository
 import dev.opux.tubeclient.core.domain.repository.WatchHistoryRepository
 import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.ClearSearchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
+import dev.opux.tubeclient.core.domain.usecase.DeleteSearchQueryUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeleteDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeletePlaylistUseCase
@@ -33,6 +36,8 @@ import dev.opux.tubeclient.core.domain.usecase.IsSubscribedUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObserveDownloadsUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistEntriesUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistsUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObserveSearchHistoryUseCase
+import dev.opux.tubeclient.core.domain.usecase.RecordSearchQueryUseCase
 import dev.opux.tubeclient.core.domain.usecase.RecordWatchEventUseCase
 import dev.opux.tubeclient.core.domain.usecase.RemoveVideoFromPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.SearchVideosUseCase
@@ -146,4 +151,24 @@ object UseCaseModule {
     @Provides
     @Singleton
     fun provideGetCommentsUseCase(repo: CommentRepository) = GetCommentsUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideObserveSearchHistoryUseCase(repo: SearchHistoryRepository) =
+        ObserveSearchHistoryUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideRecordSearchQueryUseCase(repo: SearchHistoryRepository) =
+        RecordSearchQueryUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideDeleteSearchQueryUseCase(repo: SearchHistoryRepository) =
+        DeleteSearchQueryUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideClearSearchHistoryUseCase(repo: SearchHistoryRepository) =
+        ClearSearchHistoryUseCase(repo)
 }

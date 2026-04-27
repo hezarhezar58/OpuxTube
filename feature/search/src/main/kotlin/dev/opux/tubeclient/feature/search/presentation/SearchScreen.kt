@@ -1,14 +1,20 @@
 package dev.opux.tubeclient.feature.search.presentation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -55,6 +62,7 @@ fun SearchScreen(
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val history by viewModel.history.collectAsStateWithLifecycle()
     val keyboard = LocalSoftwareKeyboardController.current
     val listState = rememberLazyListState()
 
@@ -126,7 +134,18 @@ fun SearchScreen(
                 .imePadding(),
         ) {
             when {
-                !state.hasSearched && state.query.isBlank() -> EmptyHint()
+                !state.hasSearched && state.query.isBlank() -> {
+                    if (history.isEmpty()) {
+                        EmptyHint()
+                    } else {
+                        SearchHistoryList(
+                            entries = history,
+                            onPick = viewModel::onPickFromHistory,
+                            onDelete = viewModel::onDeleteHistoryEntry,
+                            onClearAll = viewModel::onClearHistory,
+                        )
+                    }
+                }
                 state.isLoading -> CenteredLoading()
                 state.error != null && state.items.isEmpty() -> ErrorView(
                     message = state.error ?: "Hata",
@@ -161,6 +180,71 @@ fun SearchScreen(
                     if (state.isAppending) {
                         item { CenteredLoading(small = true) }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchHistoryList(
+    entries: List<String>,
+    onPick: (String) -> Unit,
+    onDelete: (String) -> Unit,
+    onClearAll: () -> Unit,
+) {
+    LazyColumn(modifier = Modifier.fillMaxSize().testTag("search_history")) {
+        item(key = "history_header") {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Son aramalar",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(
+                    onClick = onClearAll,
+                    modifier = Modifier.testTag("search_history_clear"),
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Hepsini sil",
+                    )
+                }
+            }
+        }
+        items(entries, key = { it }) { entry ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onPick(entry) }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .testTag("search_history_$entry"),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.History,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = entry,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = { onDelete(entry) }) {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        contentDescription = "Sil",
+                    )
                 }
             }
         }

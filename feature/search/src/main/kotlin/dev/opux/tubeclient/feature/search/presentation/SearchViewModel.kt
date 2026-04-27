@@ -4,15 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.opux.tubeclient.core.domain.model.SearchFilter
+import dev.opux.tubeclient.core.domain.usecase.ClearSearchHistoryUseCase
+import dev.opux.tubeclient.core.domain.usecase.DeleteSearchQueryUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObserveSearchHistoryUseCase
+import dev.opux.tubeclient.core.domain.usecase.RecordSearchQueryUseCase
 import dev.opux.tubeclient.core.domain.usecase.SearchVideosUseCase
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,6 +27,10 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchVideos: SearchVideosUseCase,
+    observeHistory: ObserveSearchHistoryUseCase,
+    private val recordHistory: RecordSearchQueryUseCase,
+    private val deleteHistoryQuery: DeleteSearchQueryUseCase,
+    private val clearHistory: ClearSearchHistoryUseCase,
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -28,6 +38,12 @@ class SearchViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(SearchUiState())
     val state: StateFlow<SearchUiState> = _state.asStateFlow()
+
+    val history: StateFlow<List<String>> = observeHistory().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList(),
+    )
 
     private var loadMoreJob: Job? = null
 
@@ -66,6 +82,7 @@ class SearchViewModel @Inject constructor(
                     nextPageToken = page.nextPageToken,
                     hasSearched = true,
                 )
+                recordHistory(q)
             }
             .onFailure { t ->
                 _state.value = SearchUiState(
@@ -110,6 +127,18 @@ class SearchViewModel @Inject constructor(
         if (q.isNotBlank()) {
             viewModelScope.launch { performSearch(q) }
         }
+    }
+
+    fun onPickFromHistory(q: String) {
+        _query.value = q
+    }
+
+    fun onDeleteHistoryEntry(q: String) {
+        viewModelScope.launch { deleteHistoryQuery(q) }
+    }
+
+    fun onClearHistory() {
+        viewModelScope.launch { clearHistory() }
     }
 
     private companion object {

@@ -1,0 +1,51 @@
+appId: dev.opux.tubeclient.debug
+---
+# Start clean: empty download DB and no leftover files.
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- takeScreenshot: 01_home_fresh
+
+# Open the first video and trigger a download.
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_download"
+    timeout: 25000
+- takeScreenshot: 02_player_with_download_button
+- tapOn:
+    id: "player_download"
+
+# Wait for the foreground service to finish writing the file. The default
+# Trending picks are short clips (~2-3 minutes) so a 60s budget is plenty.
+- extendedWaitUntil:
+    visible:
+      id: "player_download"
+    timeout: 60000
+
+# Back to Library → İndirilenler tab.
+- tapOn:
+    id: "player_back"
+- tapOn:
+    id: "nav_library"
+- tapOn:
+    id: "library_tab_downloads"
+- extendedWaitUntil:
+    visible:
+      id: "library_download_0"
+    timeout: 30000
+- takeScreenshot: 03_downloads_list_populated
+
+# Open the downloaded entry — playback should come from local storage.
+- tapOn:
+    id: "library_download_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_surface"
+    timeout: 25000
+- takeScreenshot: 04_offline_playback

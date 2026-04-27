@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.opux.tubeclient.core.database.AppDatabase
 import dev.opux.tubeclient.core.database.dao.DownloadedVideoDao
 import dev.opux.tubeclient.core.database.dao.PlaylistDao
+import dev.opux.tubeclient.core.database.dao.SearchHistoryDao
 import dev.opux.tubeclient.core.database.dao.SubscriptionDao
 import dev.opux.tubeclient.core.database.dao.WatchHistoryDao
 import javax.inject.Singleton
@@ -36,4 +37,7 @@ object DatabaseModule {
 
     @Provides
     fun provideDownloadedVideoDao(db: AppDatabase): DownloadedVideoDao = db.downloadedVideoDao()
+
+    @Provides
+    fun provideSearchHistoryDao(db: AppDatabase): SearchHistoryDao = db.searchHistoryDao()
 }

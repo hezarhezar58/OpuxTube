@@ -10,6 +10,7 @@ import dev.opux.tubeclient.core.data.repository.ChannelRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.CommentRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.DownloadRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.PlaylistRepositoryImpl
+import dev.opux.tubeclient.core.data.repository.SearchHistoryRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.SearchRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.SponsorBlockRepositoryImpl
 import dev.opux.tubeclient.core.data.repository.SubscriptionRepositoryImpl
@@ -22,6 +23,7 @@ import dev.opux.tubeclient.core.domain.repository.ChannelRepository
 import dev.opux.tubeclient.core.domain.repository.CommentRepository
 import dev.opux.tubeclient.core.domain.repository.DownloadRepository
 import dev.opux.tubeclient.core.domain.repository.PlaylistRepository
+import dev.opux.tubeclient.core.domain.repository.SearchHistoryRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
 import dev.opux.tubeclient.core.domain.repository.SponsorBlockRepository
 import dev.opux.tubeclient.core.domain.repository.SubscriptionRepository
@@ -81,4 +83,8 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindAppPreferences(impl: AppPreferencesImpl): AppPreferences
+
+    @Binds
+    @Singleton
+    abstract fun bindSearchHistoryRepository(impl: SearchHistoryRepositoryImpl): SearchHistoryRepository
 }

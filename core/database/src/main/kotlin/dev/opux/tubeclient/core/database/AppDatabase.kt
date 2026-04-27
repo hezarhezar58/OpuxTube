@@ -4,11 +4,13 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import dev.opux.tubeclient.core.database.dao.DownloadedVideoDao
 import dev.opux.tubeclient.core.database.dao.PlaylistDao
+import dev.opux.tubeclient.core.database.dao.SearchHistoryDao
 import dev.opux.tubeclient.core.database.dao.SubscriptionDao
 import dev.opux.tubeclient.core.database.dao.WatchHistoryDao
 import dev.opux.tubeclient.core.database.entity.DownloadedVideoEntity
 import dev.opux.tubeclient.core.database.entity.PlaylistEntity
 import dev.opux.tubeclient.core.database.entity.PlaylistEntryEntity
+import dev.opux.tubeclient.core.database.entity.SearchHistoryEntity
 import dev.opux.tubeclient.core.database.entity.SubscriptionEntity
 import dev.opux.tubeclient.core.database.entity.WatchHistoryEntity
 
@@ -19,8 +21,9 @@ import dev.opux.tubeclient.core.database.entity.WatchHistoryEntity
         PlaylistEntity::class,
         PlaylistEntryEntity::class,
         DownloadedVideoEntity::class,
+        SearchHistoryEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -29,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun watchHistoryDao(): WatchHistoryDao
     abstract fun playlistDao(): PlaylistDao
     abstract fun downloadedVideoDao(): DownloadedVideoDao
+    abstract fun searchHistoryDao(): SearchHistoryDao
 
     companion object {
         const val DB_NAME = "opux_tube.db"

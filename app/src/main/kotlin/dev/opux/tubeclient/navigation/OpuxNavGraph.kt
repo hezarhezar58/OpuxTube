@@ -9,6 +9,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -84,6 +85,7 @@ private fun OpuxBottomBar(navController: NavController, currentRoute: String?) {
     ) {
         TopLevelDestination.entries.forEach { dest ->
             val selected = dest.route == currentRoute
+            val label = stringResource(dest.labelRes)
             NavigationBarItem(
                 modifier = Modifier.testTag("nav_${dest.name.lowercase()}"),
                 selected = selected,
@@ -101,10 +103,10 @@ private fun OpuxBottomBar(navController: NavController, currentRoute: String?) {
                 icon = {
                     Icon(
                         imageVector = if (selected) dest.selectedIcon else dest.unselectedIcon,
-                        contentDescription = dest.label,
+                        contentDescription = label,
                     )
                 },
-                label = { Text(text = dest.label, style = MaterialTheme.typography.labelMedium) },
+                label = { Text(text = label, style = MaterialTheme.typography.labelMedium) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = MaterialTheme.colorScheme.onBackground,
                     selectedTextColor = MaterialTheme.colorScheme.onBackground,

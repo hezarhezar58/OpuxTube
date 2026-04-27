@@ -52,11 +52,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import dev.opux.tubeclient.feature.library.R
 import dev.opux.tubeclient.core.domain.model.DownloadStatus
 import dev.opux.tubeclient.core.domain.model.DownloadedVideo
 import dev.opux.tubeclient.core.domain.model.Playlist
@@ -85,7 +87,12 @@ fun LibraryScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Kitaplık", style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.library_title),
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                },
                 actions = {
                     when {
                         selectedTab == 0 && state.history.isNotEmpty() -> {
@@ -133,31 +140,31 @@ fun LibraryScreen(
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    text = { Text("Geçmiş") },
+                    text = { Text(stringResource(R.string.library_tab_history)) },
                     modifier = Modifier.testTag("library_tab_history"),
                 )
                 Tab(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
-                    text = { Text("Abonelikler") },
+                    text = { Text(stringResource(R.string.library_tab_subscriptions)) },
                     modifier = Modifier.testTag("library_tab_subscriptions"),
                 )
                 Tab(
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 },
-                    text = { Text("Listeler") },
+                    text = { Text(stringResource(R.string.library_tab_playlists)) },
                     modifier = Modifier.testTag("library_tab_playlists"),
                 )
                 Tab(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
-                    text = { Text("İndirilenler") },
+                    text = { Text(stringResource(R.string.library_tab_downloads)) },
                     modifier = Modifier.testTag("library_tab_downloads"),
                 )
                 Tab(
                     selected = selectedTab == 4,
                     onClick = { selectedTab = 4 },
-                    text = { Text("Ayarlar") },
+                    text = { Text(stringResource(R.string.library_tab_settings)) },
                     modifier = Modifier.testTag("library_tab_settings"),
                 )
             }
@@ -594,15 +601,19 @@ private fun SettingsTab(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Text(
-                    text = "Önbellek",
+                    text = stringResource(R.string.settings_cache_header),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = if (downloadsCount == 0) {
-                        "İndirilen video yok"
+                        stringResource(R.string.settings_cache_empty)
                     } else {
-                        "$downloadsCount video · ${cacheBytes.formatBytes()}"
+                        stringResource(
+                            R.string.settings_cache_summary,
+                            downloadsCount,
+                            cacheBytes.formatBytes(),
+                        )
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -625,7 +636,7 @@ private fun SettingsTab(
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        text = "Tüm indirilenleri sil",
+                        text = stringResource(R.string.settings_cache_clear),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.error,
                     )
@@ -639,12 +650,12 @@ private fun SettingsTab(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Text(
-                    text = "Tema",
+                    text = stringResource(R.string.settings_theme_header),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Uygulama görünümünü seç",
+                    text = stringResource(R.string.settings_theme_subtitle),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -657,6 +668,27 @@ private fun SettingsTab(
                 onSelect = { onSelectThemeMode(mode) },
             )
         }
+        item(key = "locale_header") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_locale_header),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(R.string.settings_locale_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        item(key = "locale_options") {
+            LocalePickerSection()
+        }
         item(key = "sponsorblock_header") {
             Column(
                 modifier = Modifier
@@ -664,12 +696,12 @@ private fun SettingsTab(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Text(
-                    text = "SponsorBlock kategorileri",
+                    text = stringResource(R.string.settings_sponsorblock_header),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = "Atlamak istediğin segment türlerini seç",
+                    text = stringResource(R.string.settings_sponsorblock_subtitle),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -730,11 +762,13 @@ private fun ThemeModeRow(
         RadioButton(selected = selected, onClick = onSelect)
         Spacer(Modifier.width(8.dp))
         Text(
-            text = when (mode) {
-                ThemeMode.LIGHT -> "Açık"
-                ThemeMode.DARK -> "Koyu"
-                ThemeMode.SYSTEM -> "Sistem"
-            },
+            text = stringResource(
+                when (mode) {
+                    ThemeMode.LIGHT -> R.string.settings_theme_light
+                    ThemeMode.DARK -> R.string.settings_theme_dark
+                    ThemeMode.SYSTEM -> R.string.settings_theme_system
+                },
+            ),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -787,6 +821,68 @@ private fun SponsorBlockCategory.description(): String = when (this) {
     SponsorBlockCategory.SELF_PROMO -> "Kendi ürün veya kanalını tanıtma"
     SponsorBlockCategory.INTERACTION -> "Beğen, abone ol gibi hatırlatmalar"
     SponsorBlockCategory.MUSIC_OFFTOPIC -> "Müzik videolarındaki konuşma kısımları"
+}
+
+@Composable
+private fun LocalePickerSection() {
+    // Three locale options: Turkish, English, and "follow system locale" (empty list).
+    // AppCompat persists the choice in app metadata when autoStoreLocales is enabled,
+    // and recreates active activities on change so the new resources kick in immediately.
+    val current = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+    val activeTag: String = current.toLanguageTags().substringBefore(',').lowercase()
+
+    @Composable
+    fun row(
+        labelRes: Int,
+        tagToApply: String?,
+        isActive: Boolean,
+        testTag: String,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    val list = if (tagToApply.isNullOrEmpty()) {
+                        androidx.core.os.LocaleListCompat.getEmptyLocaleList()
+                    } else {
+                        androidx.core.os.LocaleListCompat.forLanguageTags(tagToApply)
+                    }
+                    androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(list)
+                }
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .testTag(testTag),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            androidx.compose.material3.RadioButton(selected = isActive, onClick = null)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(labelRes),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        row(
+            labelRes = R.string.settings_locale_system,
+            tagToApply = null,
+            isActive = activeTag.isEmpty(),
+            testTag = "library_locale_system",
+        )
+        row(
+            labelRes = R.string.settings_locale_tr,
+            tagToApply = "tr",
+            isActive = activeTag.startsWith("tr"),
+            testTag = "library_locale_tr",
+        )
+        row(
+            labelRes = R.string.settings_locale_en,
+            tagToApply = "en",
+            isActive = activeTag.startsWith("en"),
+            testTag = "library_locale_en",
+        )
+    }
 }
 
 @Composable

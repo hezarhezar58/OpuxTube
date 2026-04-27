@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Library tabs -->
+    <string name="library_title">Kitaplık</string>
+    <string name="library_tab_history">Geçmiş</string>
+    <string name="library_tab_subscriptions">Abonelikler</string>
+    <string name="library_tab_playlists">Listeler</string>
+    <string name="library_tab_downloads">İndirilenler</string>
+    <string name="library_tab_settings">Ayarlar</string>
+
+    <!-- History/Subscriptions/Playlists/Downloads tab content -->
+    <string name="library_history_clear">Geçmişi temizle</string>
+    <string name="library_history_empty">Henüz izleme geçmişin yok</string>
+    <string name="library_subscriptions_empty">Henüz abone olduğun kanal yok</string>
+    <string name="library_playlists_empty">Henüz liste oluşturmadın. Sağ üstteki + ile başla.</string>
+    <string name="library_playlist_new_button">Yeni liste</string>
+    <string name="library_playlist_new_title">Yeni liste</string>
+    <string name="library_playlist_name_label">Liste adı</string>
+    <string name="library_playlist_create">Oluştur</string>
+    <string name="library_playlist_delete">Listeyi sil</string>
+    <string name="library_playlist_count">%1$d video</string>
+    <string name="library_playlist_empty_label">Boş</string>
+    <string name="library_downloads_empty">Henüz indirme yok. Bir videoda indirme simgesine dokun.</string>
+    <string name="library_download_delete">Silmek</string>
+
+    <!-- Settings sections -->
+    <string name="settings_cache_header">Önbellek</string>
+    <string name="settings_cache_empty">İndirilen video yok</string>
+    <string name="settings_cache_summary">%1$d video · %2$s</string>
+    <string name="settings_cache_clear">Tüm indirilenleri sil</string>
+    <string name="settings_cache_confirm_title">İndirilenler silinecek</string>
+    <string name="settings_cache_confirm_body">Tüm indirilen videolar ve dosyalar kalıcı olarak silinecek. Bu işlem geri alınamaz.</string>
+
+    <string name="settings_theme_header">Tema</string>
+    <string name="settings_theme_subtitle">Uygulama görünümünü seç</string>
+    <string name="settings_theme_light">Açık</string>
+    <string name="settings_theme_dark">Koyu</string>
+    <string name="settings_theme_system">Sistem</string>
+
+    <string name="settings_locale_header">Dil</string>
+    <string name="settings_locale_subtitle">Uygulama dilini seç</string>
+    <string name="settings_locale_tr">Türkçe</string>
+    <string name="settings_locale_en">English</string>
+    <string name="settings_locale_system">Sistem</string>
+
+    <string name="settings_sponsorblock_header">SponsorBlock kategorileri</string>
+    <string name="settings_sponsorblock_subtitle">Atlamak istediğin segment türlerini seç</string>
+
+    <!-- Common -->
+    <string name="common_cancel">İptal</string>
+    <string name="common_delete">Sil</string>
+</resources>

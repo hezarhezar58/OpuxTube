@@ -48,6 +48,18 @@
             android:foregroundServiceType="dataSync"
             android:exported="false" />
 
+        <!-- AppCompatDelegate.setApplicationLocales persists the user's locale via this
+             service when autoStoreLocales is true. We don't use it as a real service —
+             it's a marker AppCompat reads through PackageManager. -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
+
     </application>
 
 </manifest>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Library tabs -->
+    <string name="library_title">Library</string>
+    <string name="library_tab_history">History</string>
+    <string name="library_tab_subscriptions">Subscriptions</string>
+    <string name="library_tab_playlists">Playlists</string>
+    <string name="library_tab_downloads">Downloads</string>
+    <string name="library_tab_settings">Settings</string>
+
+    <string name="library_history_clear">Clear history</string>
+    <string name="library_history_empty">No watch history yet</string>
+    <string name="library_subscriptions_empty">No subscriptions yet</string>
+    <string name="library_playlists_empty">No playlists yet. Tap + on the top-right.</string>
+    <string name="library_playlist_new_button">New playlist</string>
+    <string name="library_playlist_new_title">New playlist</string>
+    <string name="library_playlist_name_label">Playlist name</string>
+    <string name="library_playlist_create">Create</string>
+    <string name="library_playlist_delete">Delete playlist</string>
+    <string name="library_playlist_count">%1$d videos</string>
+    <string name="library_playlist_empty_label">Empty</string>
+    <string name="library_downloads_empty">No downloads. Tap the download icon on any video.</string>
+    <string name="library_download_delete">Delete</string>
+
+    <string name="settings_cache_header">Cache</string>
+    <string name="settings_cache_empty">No downloaded videos</string>
+    <string name="settings_cache_summary">%1$d videos · %2$s</string>
+    <string name="settings_cache_clear">Delete all downloads</string>
+    <string name="settings_cache_confirm_title">Delete downloads?</string>
+    <string name="settings_cache_confirm_body">All downloaded videos and files will be permanently removed. This cannot be undone.</string>
+
+    <string name="settings_theme_header">Theme</string>
+    <string name="settings_theme_subtitle">Choose the app appearance</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_system">System</string>
+
+    <string name="settings_locale_header">Language</string>
+    <string name="settings_locale_subtitle">Choose the app language</string>
+    <string name="settings_locale_tr">Türkçe</string>
+    <string name="settings_locale_en">English</string>
+    <string name="settings_locale_system">System</string>
+
+    <string name="settings_sponsorblock_header">SponsorBlock categories</string>
+    <string name="settings_sponsorblock_subtitle">Pick which segments to skip</string>
+
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+</resources>

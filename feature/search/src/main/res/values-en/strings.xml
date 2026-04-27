@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_load_failed">Search failed</string>
+    <string name="search_load_more_failed">Couldn\'t load more</string>
+    <string name="search_no_results">No results</string>
+    <string name="search_prompt">Type above to search</string>
+    <string name="search_placeholder">Search YouTube</string>
+    <string name="search_recent_header">Recent searches</string>
+</resources>

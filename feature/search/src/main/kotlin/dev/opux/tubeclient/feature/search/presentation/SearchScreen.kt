@@ -45,12 +45,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.opux.tubeclient.core.domain.model.VideoPreview
 import dev.opux.tubeclient.core.ui.component.VideoCard
+import dev.opux.tubeclient.feature.search.R
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +86,7 @@ fun SearchScreen(
                     OutlinedTextField(
                         value = query,
                         onValueChange = viewModel::onQueryChange,
-                        placeholder = { Text("YouTube'da ara") },
+                        placeholder = { Text(stringResource(R.string.search_placeholder)) },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Filled.Search,
@@ -156,7 +158,7 @@ fun SearchScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Sonuç bulunamadı",
+                        text = stringResource(R.string.search_no_results),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -202,7 +204,7 @@ private fun SearchHistoryList(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = "Son aramalar",
+                    text = stringResource(R.string.search_recent_header),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),
@@ -260,7 +262,7 @@ private fun EmptyHint() {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "Aramak için yukarıya yazın",
+            text = stringResource(R.string.search_prompt),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

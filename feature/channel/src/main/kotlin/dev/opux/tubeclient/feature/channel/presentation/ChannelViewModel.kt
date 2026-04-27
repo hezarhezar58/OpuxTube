@@ -1,14 +1,17 @@
 package dev.opux.tubeclient.feature.channel.presentation
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.opux.tubeclient.core.domain.usecase.GetChannelDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelVideosUseCase
 import dev.opux.tubeclient.core.domain.usecase.IsSubscribedUseCase
 import dev.opux.tubeclient.core.domain.usecase.SubscribeChannelUseCase
 import dev.opux.tubeclient.core.domain.usecase.UnsubscribeChannelUseCase
+import dev.opux.tubeclient.feature.channel.R
 import dev.opux.tubeclient.feature.channel.navigation.ChannelUrlArg
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -23,6 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChannelViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle,
     private val getDetails: GetChannelDetailsUseCase,
     private val getVideos: GetChannelVideosUseCase,
@@ -101,7 +105,7 @@ class ChannelViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isAppending = false,
-                            error = t.message ?: "Daha fazla yüklenemedi",
+                            error = t.message ?: appContext.getString(R.string.channel_load_more_failed),
                         )
                     }
                 }

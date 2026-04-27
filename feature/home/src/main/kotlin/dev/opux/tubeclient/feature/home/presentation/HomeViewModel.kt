@@ -1,9 +1,12 @@
 package dev.opux.tubeclient.feature.home.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.opux.tubeclient.core.domain.usecase.GetTrendingUseCase
+import dev.opux.tubeclient.feature.home.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val getTrending: GetTrendingUseCase,
 ) : ViewModel() {
 
@@ -39,7 +43,7 @@ class HomeViewModel @Inject constructor(
                 .onFailure { t ->
                     _state.value = HomeUiState(
                         isLoading = false,
-                        error = t.message ?: "Yüklenemedi",
+                        error = t.message ?: appContext.getString(R.string.home_load_failed),
                     )
                 }
         }
@@ -66,7 +70,7 @@ class HomeViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isAppending = false,
-                            error = t.message ?: "Daha fazla yüklenemedi",
+                            error = t.message ?: appContext.getString(R.string.home_load_more_failed),
                         )
                     }
                 }

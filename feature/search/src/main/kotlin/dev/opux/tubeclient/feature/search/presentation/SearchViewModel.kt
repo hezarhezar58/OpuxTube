@@ -1,14 +1,17 @@
 package dev.opux.tubeclient.feature.search.presentation
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.opux.tubeclient.core.domain.model.SearchFilter
 import dev.opux.tubeclient.core.domain.usecase.ClearSearchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeleteSearchQueryUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObserveSearchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.RecordSearchQueryUseCase
 import dev.opux.tubeclient.core.domain.usecase.SearchVideosUseCase
+import dev.opux.tubeclient.feature.search.R
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +29,7 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val searchVideos: SearchVideosUseCase,
     observeHistory: ObserveSearchHistoryUseCase,
     private val recordHistory: RecordSearchQueryUseCase,
@@ -88,7 +92,7 @@ class SearchViewModel @Inject constructor(
                 _state.value = SearchUiState(
                     query = q,
                     isLoading = false,
-                    error = t.message ?: "Arama başarısız",
+                    error = t.message ?: appContext.getString(R.string.search_load_failed),
                     hasSearched = true,
                 )
             }
@@ -115,7 +119,7 @@ class SearchViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isAppending = false,
-                            error = t.message ?: "Daha fazla yüklenemedi",
+                            error = t.message ?: appContext.getString(R.string.search_load_more_failed),
                         )
                     }
                 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,6 +49,7 @@ import coil3.compose.AsyncImage
 import dev.opux.tubeclient.core.domain.model.ChannelDetail
 import dev.opux.tubeclient.core.domain.model.VideoPreview
 import dev.opux.tubeclient.core.ui.component.VideoCard
+import dev.opux.tubeclient.feature.channel.R
 import dev.opux.tubeclient.core.ui.util.formatViewCount
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -217,7 +219,7 @@ private fun ChannelHeader(
                     Spacer(Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.Filled.Verified,
-                        contentDescription = "Doğrulanmış kanal",
+                        contentDescription = stringResource(R.string.channel_verified),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp),
                     )

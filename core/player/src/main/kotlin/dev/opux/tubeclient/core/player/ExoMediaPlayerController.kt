@@ -147,6 +147,10 @@ class ExoMediaPlayerController @Inject constructor(
 
     override fun seekTo(positionMs: Long) { mediaController?.seekTo(positionMs) }
 
+    override fun setPlaybackSpeed(speed: Float) {
+        mediaController?.setPlaybackSpeed(speed.coerceIn(0.25f, 4.0f))
+    }
+
     override fun stop() {
         mediaController?.stop()
         mediaController?.clearMediaItems()

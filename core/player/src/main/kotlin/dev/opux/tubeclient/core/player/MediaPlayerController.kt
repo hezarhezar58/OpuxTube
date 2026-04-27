@@ -20,6 +20,7 @@ interface MediaPlayerController {
     fun pause()
     fun resume()
     fun seekTo(positionMs: Long)
+    fun setPlaybackSpeed(speed: Float)
     fun stop()
     fun release()
 }

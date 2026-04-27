@@ -8,4 +8,5 @@ interface DownloadRepository {
     suspend fun find(videoId: String): DownloadedVideo?
     suspend fun upsert(downloaded: DownloadedVideo)
     suspend fun delete(videoId: String)
+    suspend fun clearAll()
 }

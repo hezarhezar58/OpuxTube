@@ -21,4 +21,7 @@ interface DownloadedVideoDao {
 
     @Query("DELETE FROM downloaded_videos WHERE videoId = :videoId")
     suspend fun delete(videoId: String)
+
+    @Query("DELETE FROM downloaded_videos")
+    suspend fun clearAll()
 }

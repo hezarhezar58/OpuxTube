@@ -285,6 +285,11 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun onSelectSpeed(speed: Float) {
+        controller.setPlaybackSpeed(speed)
+        _uiState.value = _uiState.value.copy(playbackSpeed = speed)
+    }
+
     fun togglePlayPause() {
         if (controller.state.value.isPlaying) controller.pause() else controller.resume()
     }

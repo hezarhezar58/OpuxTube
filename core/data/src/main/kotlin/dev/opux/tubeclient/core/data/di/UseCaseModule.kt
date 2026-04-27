@@ -16,6 +16,7 @@ import dev.opux.tubeclient.core.domain.repository.TrendingRepository
 import dev.opux.tubeclient.core.domain.repository.VideoRepository
 import dev.opux.tubeclient.core.domain.repository.WatchHistoryRepository
 import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.ClearAllDownloadsUseCase
 import dev.opux.tubeclient.core.domain.usecase.ClearSearchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeleteSearchQueryUseCase
@@ -147,6 +148,10 @@ object UseCaseModule {
     @Provides
     @Singleton
     fun provideDeleteDownloadUseCase(repo: DownloadRepository) = DeleteDownloadUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideClearAllDownloadsUseCase(repo: DownloadRepository) = ClearAllDownloadsUseCase(repo)
 
     @Provides
     @Singleton

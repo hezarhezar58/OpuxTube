@@ -8,6 +8,7 @@ import dev.opux.tubeclient.core.domain.model.ThemeMode
 import dev.opux.tubeclient.core.domain.preferences.AppPreferences
 import dev.opux.tubeclient.core.domain.preferences.SponsorBlockPreferences
 import dev.opux.tubeclient.core.domain.repository.DownloadActions
+import dev.opux.tubeclient.core.domain.usecase.ClearAllDownloadsUseCase
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeleteDownloadUseCase
@@ -34,6 +35,7 @@ class LibraryViewModel @Inject constructor(
     private val createPlaylist: CreatePlaylistUseCase,
     private val deletePlaylistUseCase: DeletePlaylistUseCase,
     private val deleteDownload: DeleteDownloadUseCase,
+    private val clearAllDownloads: ClearAllDownloadsUseCase,
     private val sponsorBlockPreferences: SponsorBlockPreferences,
     private val appPreferences: AppPreferences,
 ) : ViewModel() {
@@ -92,5 +94,9 @@ class LibraryViewModel @Inject constructor(
 
     fun onSelectThemeMode(mode: ThemeMode) {
         viewModelScope.launch { appPreferences.setThemeMode(mode) }
+    }
+
+    fun onClearAllDownloads() {
+        viewModelScope.launch { clearAllDownloads() }
     }
 }

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -108,6 +109,7 @@ fun PlayerScreen(
     var showPlaylistSheet by remember { mutableStateOf(false) }
     var showCreatePlaylistDialog by remember { mutableStateOf(false) }
     var showQualitySheet by remember { mutableStateOf(false) }
+    var showSpeedSheet by remember { mutableStateOf(false) }
     var isFullscreen by remember { mutableStateOf(false) }
     val context = LocalContext.current
     // Snapshot the activity's orientation request the first time we land on this screen so
@@ -292,6 +294,15 @@ fun PlayerScreen(
                             )
                         }
                         IconButton(
+                            onClick = { showSpeedSheet = true },
+                            modifier = Modifier.testTag("player_speed"),
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Speed,
+                                contentDescription = "Hız",
+                            )
+                        }
+                        IconButton(
                             onClick = { showQualitySheet = true },
                             modifier = Modifier.testTag("player_quality"),
                         ) {
@@ -391,6 +402,69 @@ fun PlayerScreen(
                 },
                 onDismiss = { showQualitySheet = false },
             )
+        }
+    }
+    if (showSpeedSheet) {
+        SpeedPickerSheet(
+            current = uiState.playbackSpeed,
+            onPick = { speed ->
+                viewModel.onSelectSpeed(speed)
+                showSpeedSheet = false
+            },
+            onDismiss = { showSpeedSheet = false },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SpeedPickerSheet(
+    current: Float,
+    onPick: (Float) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val options = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f)
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.testTag("player_speed_sheet"),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text(
+                text = "Oynatma hızı",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+            HorizontalDivider()
+            LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                itemsIndexed(options, key = { _, s -> s }) { index, speed ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onPick(speed) }
+                            .padding(horizontal = 16.dp, vertical = 14.dp)
+                            .testTag("player_speed_$index"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = if (speed == 1.0f) "Normal (1x)" else "${speed}x",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (speed == current) {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.padding(bottom = 8.dp))
         }
     }
 }

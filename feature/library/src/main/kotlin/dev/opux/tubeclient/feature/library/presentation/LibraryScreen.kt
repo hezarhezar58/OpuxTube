@@ -191,8 +191,11 @@ fun LibraryScreen(
                     else -> SettingsTab(
                         enabled = state.sponsorBlockEnabled,
                         themeMode = state.themeMode,
+                        downloadsCount = state.downloads.size,
+                        cacheBytes = state.downloads.sumOf { it.fileSizeBytes },
                         onToggleCategory = viewModel::onToggleCategory,
                         onSelectThemeMode = viewModel::onSelectThemeMode,
+                        onClearAllDownloads = viewModel::onClearAllDownloads,
                     )
                 }
             }
@@ -572,14 +575,63 @@ private fun Long.formatBytes(): String {
 private fun SettingsTab(
     enabled: Set<SponsorBlockCategory>,
     themeMode: ThemeMode,
+    downloadsCount: Int,
+    cacheBytes: Long,
     onToggleCategory: (SponsorBlockCategory, Boolean) -> Unit,
     onSelectThemeMode: (ThemeMode) -> Unit,
+    onClearAllDownloads: () -> Unit,
 ) {
+    var showConfirmClear by remember { mutableStateOf(false) }
     LazyColumn(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         modifier = Modifier.fillMaxSize(),
     ) {
+        item(key = "cache_header") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = "Önbellek",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = if (downloadsCount == 0) {
+                        "İndirilen video yok"
+                    } else {
+                        "$downloadsCount video · ${cacheBytes.formatBytes()}"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        if (downloadsCount > 0) {
+            item(key = "cache_clear") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showConfirmClear = true }
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .testTag("library_clear_downloads"),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = "Tüm indirilenleri sil",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
         item(key = "theme_header") {
             Column(
                 modifier = Modifier
@@ -633,6 +685,31 @@ private fun SettingsTab(
                 onToggle = { onToggleCategory(category, it) },
             )
         }
+    }
+
+    if (showConfirmClear) {
+        AlertDialog(
+            onDismissRequest = { showConfirmClear = false },
+            title = { Text("İndirilenler silinecek") },
+            text = {
+                Text(
+                    "Tüm indirilen videolar ve dosyalar kalıcı olarak silinecek. " +
+                        "Bu işlem geri alınamaz.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onClearAllDownloads()
+                        showConfirmClear = false
+                    },
+                    modifier = Modifier.testTag("library_clear_downloads_confirm"),
+                ) { Text("Sil") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirmClear = false }) { Text("İptal") }
+            },
+        )
     }
 }
 

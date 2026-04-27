@@ -9,6 +9,7 @@ data class PlayerUiState(
     val detail: VideoDetail? = null,
     val error: String? = null,
     val qualityOverride: VideoStream? = null,
+    val playbackSpeed: Float = 1.0f,
 )
 
 data class CommentsUiState(

@@ -15,3 +15,7 @@ class FindDownloadUseCase(private val repo: DownloadRepository) {
 class DeleteDownloadUseCase(private val repo: DownloadRepository) {
     suspend operator fun invoke(videoId: String) = repo.delete(videoId)
 }
+
+class ClearAllDownloadsUseCase(private val repo: DownloadRepository) {
+    suspend operator fun invoke() = repo.clearAll()
+}

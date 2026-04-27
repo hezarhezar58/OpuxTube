@@ -1,5 +1,7 @@
 package dev.opux.tubeclient.core.ui.util
 
+import android.content.Context
+import dev.opux.tubeclient.core.ui.R
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.format.DateTimeParseException
@@ -34,32 +36,42 @@ private fun formatCompact(value: Double, suffix: String): String {
 }
 
 /**
- * Converts an upload-date string into a Turkish relative phrase ("3 gün önce").
- * Handles ISO 8601 timestamps from NewPipe's StreamInfo path; falls back to the input
- * unchanged when it's already a localized string ("7 days ago" / "1 hafta önce") or null.
+ * Converts an upload-date string into a localized relative phrase ("3 days ago"
+ * / "3 gün önce"). Handles ISO 8601 timestamps from NewPipe's StreamInfo path;
+ * also normalizes English "N units ago" strings into the active locale before
+ * returning the input unchanged as a last resort.
  */
-fun String?.formatRelativeUploadDate(now: Instant = Instant.now()): String? {
+fun String?.formatRelativeUploadDate(
+    context: Context,
+    now: Instant = Instant.now(),
+): String? {
     if (this.isNullOrBlank()) return null
     val instant = parseIsoOrNull()
     if (instant != null) {
-        return formatRelativeFromInstant(instant, now)
+        return formatRelativeFromInstant(context, instant, now)
     }
-    return englishRelativeToTurkish(this) ?: this
+    return englishRelativeToLocalized(context, this) ?: this
 }
 
-fun Long.formatRelativeMillis(now: Instant = Instant.now()): String =
-    formatRelativeFromInstant(Instant.ofEpochMilli(this), now)
+fun Long.formatRelativeMillis(
+    context: Context,
+    now: Instant = Instant.now(),
+): String = formatRelativeFromInstant(context, Instant.ofEpochMilli(this), now)
 
-private fun formatRelativeFromInstant(instant: Instant, now: Instant): String {
+private fun formatRelativeFromInstant(
+    context: Context,
+    instant: Instant,
+    now: Instant,
+): String {
     val seconds = (now.epochSecond - instant.epochSecond).coerceAtLeast(0)
     return when {
-        seconds < 60 -> "az önce"
-        seconds < 3600 -> "${seconds / 60} dakika önce"
-        seconds < 86_400 -> "${seconds / 3600} saat önce"
-        seconds < 604_800 -> "${seconds / 86_400} gün önce"
-        seconds < 2_592_000 -> "${seconds / 604_800} hafta önce"
-        seconds < 31_536_000 -> "${seconds / 2_592_000} ay önce"
-        else -> "${seconds / 31_536_000} yıl önce"
+        seconds < 60 -> context.getString(R.string.core_just_now)
+        seconds < 3600 -> context.getString(R.string.core_minutes_ago, (seconds / 60).toInt())
+        seconds < 86_400 -> context.getString(R.string.core_hours_ago, (seconds / 3600).toInt())
+        seconds < 604_800 -> context.getString(R.string.core_days_ago, (seconds / 86_400).toInt())
+        seconds < 2_592_000 -> context.getString(R.string.core_weeks_ago, (seconds / 604_800).toInt())
+        seconds < 31_536_000 -> context.getString(R.string.core_months_ago, (seconds / 2_592_000).toInt())
+        else -> context.getString(R.string.core_years_ago, (seconds / 31_536_000).toInt())
     }
 }
 
@@ -77,18 +89,17 @@ private val ENGLISH_AGO_REGEX = Regex(
     RegexOption.IGNORE_CASE,
 )
 
-private val ENGLISH_UNIT_TO_TURKISH = mapOf(
-    "second" to "saniye",
-    "minute" to "dakika",
-    "hour" to "saat",
-    "day" to "gün",
-    "week" to "hafta",
-    "month" to "ay",
-    "year" to "yıl",
-)
-
-private fun englishRelativeToTurkish(text: String): String? {
+private fun englishRelativeToLocalized(context: Context, text: String): String? {
     val match = ENGLISH_AGO_REGEX.find(text) ?: return null
-    val unit = ENGLISH_UNIT_TO_TURKISH[match.groupValues[2].lowercase(Locale.ROOT)] ?: return null
-    return "${match.groupValues[1]} $unit önce"
+    val value = match.groupValues[1].toIntOrNull() ?: return null
+    val resId = when (match.groupValues[2].lowercase(Locale.ROOT)) {
+        "second", "minute" -> R.string.core_minutes_ago
+        "hour" -> R.string.core_hours_ago
+        "day" -> R.string.core_days_ago
+        "week" -> R.string.core_weeks_ago
+        "month" -> R.string.core_months_ago
+        "year" -> R.string.core_years_ago
+        else -> return null
+    }
+    return context.getString(resId, value)
 }

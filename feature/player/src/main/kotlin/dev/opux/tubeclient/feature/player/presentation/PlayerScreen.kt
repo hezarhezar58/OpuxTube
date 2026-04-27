@@ -859,11 +859,13 @@ private fun DetailContent(
                 } else {
                     ""
                 }
+                val context = LocalContext.current
+                val relative = detail.uploadedAt.formatRelativeUploadDate(context)
                 val meta = buildString {
                     if (viewCountLabel.isNotEmpty()) append(viewCountLabel)
-                    detail.uploadedAt.formatRelativeUploadDate()?.let {
+                    if (relative != null) {
                         if (isNotEmpty()) append(" · ")
-                        append(it)
+                        append(relative)
                     }
                 }
                 if (meta.isNotBlank()) {

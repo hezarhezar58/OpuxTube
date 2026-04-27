@@ -2,4 +2,5 @@
 <resources>
     <string name="channel_load_more_failed">Couldn\'t load more</string>
     <string name="channel_verified">Verified channel</string>
+    <string name="channel_subscriber_count">%1$s subscribers</string>
 </resources>

@@ -2,4 +2,5 @@
 <resources>
     <string name="channel_load_more_failed">Daha fazla yüklenemedi</string>
     <string name="channel_verified">Doğrulanmış kanal</string>
+    <string name="channel_subscriber_count">%1$s abone</string>
 </resources>

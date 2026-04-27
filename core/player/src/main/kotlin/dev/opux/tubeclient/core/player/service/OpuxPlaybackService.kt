@@ -13,6 +13,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import dev.opux.tubeclient.core.player.R
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
@@ -195,9 +196,11 @@ class OpuxPlaybackService : MediaSessionService() {
         val mgr = getSystemService(NotificationManager::class.java) ?: return
         if (mgr.getNotificationChannel(CHANNEL_ID) != null) return
         val channel = NotificationChannel(
-            CHANNEL_ID, "Oynatma", NotificationManager.IMPORTANCE_LOW,
+            CHANNEL_ID,
+            getString(R.string.player_notification_channel_name),
+            NotificationManager.IMPORTANCE_LOW,
         ).apply {
-            description = "OpuxTube oynatma denetimleri"
+            description = getString(R.string.player_notification_channel_desc)
             setShowBadge(false)
         }
         mgr.createNotificationChannel(channel)
@@ -206,7 +209,7 @@ class OpuxPlaybackService : MediaSessionService() {
     private fun buildPlaceholderNotification(): Notification =
         Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("OpuxTube")
-            .setContentText("Hazırlanıyor…")
+            .setContentText(getString(R.string.player_notification_preparing))
             .setSmallIcon(android.R.drawable.ic_media_play)
             .setOngoing(true)
             .setOnlyAlertOnce(true)

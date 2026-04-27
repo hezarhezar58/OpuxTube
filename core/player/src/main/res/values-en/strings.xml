@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_notification_preparing">Preparing…</string>
+    <string name="player_notification_channel_name">Playback</string>
+    <string name="player_notification_channel_desc">OpuxTube playback controls</string>
+    <string name="player_error_playback">Playback error</string>
+    <string name="player_error_no_stream">No playable stream available</string>
+</resources>

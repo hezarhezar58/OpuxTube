@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="core_view_count">%1$s views</string>
+
+    <string name="core_just_now">just now</string>
+    <string name="core_minutes_ago">%1$d minutes ago</string>
+    <string name="core_hours_ago">%1$d hours ago</string>
+    <string name="core_days_ago">%1$d days ago</string>
+    <string name="core_weeks_ago">%1$d weeks ago</string>
+    <string name="core_months_ago">%1$d months ago</string>
+    <string name="core_years_ago">%1$d years ago</string>
+</resources>

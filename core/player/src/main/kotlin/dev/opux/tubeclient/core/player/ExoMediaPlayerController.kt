@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoStream
+import dev.opux.tubeclient.core.player.R
 import dev.opux.tubeclient.core.player.model.PlaybackState
 import dev.opux.tubeclient.core.player.service.OpuxPlaybackService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,7 +61,9 @@ class ExoMediaPlayerController @Inject constructor(
 
         override fun onPlayerError(error: PlaybackException) {
             Timber.e(error, "Controller player error")
-            _state.update { it.copy(error = error.localizedMessage ?: "Oynatma hatası") }
+            _state.update {
+                it.copy(error = error.localizedMessage ?: context.getString(R.string.player_error_playback))
+            }
         }
     }
 
@@ -93,7 +96,7 @@ class ExoMediaPlayerController @Inject constructor(
         qualityOverride: VideoStream?,
     ) {
         val selection = streamSelector.select(detail, qualityOverride) ?: run {
-            _state.update { it.copy(error = "Oynatılabilir akış bulunamadı") }
+            _state.update { it.copy(error = context.getString(R.string.player_error_no_stream)) }
             return
         }
         val ctrl = mediaController

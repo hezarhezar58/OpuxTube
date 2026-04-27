@@ -227,7 +227,10 @@ private fun ChannelHeader(
             }
             if (detail.subscriberCount > 0) {
                 Text(
-                    text = "${detail.subscriberCount.formatViewCount()} abone",
+                    text = stringResource(
+                        R.string.channel_subscriber_count,
+                        detail.subscriberCount.formatViewCount(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

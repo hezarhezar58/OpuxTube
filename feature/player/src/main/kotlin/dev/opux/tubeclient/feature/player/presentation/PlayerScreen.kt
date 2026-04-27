@@ -22,6 +22,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Downloading
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.HighQuality
@@ -73,6 +76,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
+import dev.opux.tubeclient.core.domain.model.DownloadStatus
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoPreview
@@ -94,6 +98,7 @@ fun PlayerScreen(
     val playback by viewModel.playbackState.collectAsStateWithLifecycle()
     val player by viewModel.playerFlow.collectAsStateWithLifecycle()
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
+    val downloadStatus by viewModel.downloadStatus.collectAsStateWithLifecycle()
     val isInPip = LocalIsInPipMode.current
     val snackbarHostState = remember { SnackbarHostState() }
     var showPlaylistSheet by remember { mutableStateOf(false) }
@@ -247,6 +252,22 @@ fun PlayerScreen(
                 },
                 actions = {
                     if (uiState.detail != null) {
+                        IconButton(
+                            onClick = viewModel::onDownload,
+                            enabled = downloadStatus !is DownloadStatus.InProgress &&
+                                downloadStatus !is DownloadStatus.Queued,
+                            modifier = Modifier.testTag("player_download"),
+                        ) {
+                            Icon(
+                                imageVector = when (downloadStatus) {
+                                    is DownloadStatus.Completed -> Icons.Filled.CheckCircle
+                                    is DownloadStatus.InProgress,
+                                    is DownloadStatus.Queued -> Icons.Filled.Downloading
+                                    else -> Icons.Filled.Download
+                                },
+                                contentDescription = "İndir",
+                            )
+                        }
                         IconButton(
                             onClick = { showQualitySheet = true },
                             modifier = Modifier.testTag("player_quality"),

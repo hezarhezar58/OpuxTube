@@ -5,6 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import dev.opux.tubeclient.core.domain.model.DownloadedVideo
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.PlaylistEntry
 import dev.opux.tubeclient.core.domain.model.Subscription
@@ -24,12 +25,14 @@ fun NavGraphBuilder.libraryDestination(
     onHistoryClick: (WatchHistoryEntry) -> Unit,
     onSubscriptionClick: (Subscription) -> Unit,
     onPlaylistClick: (Playlist) -> Unit,
+    onDownloadClick: (DownloadedVideo) -> Unit,
 ) {
     composable(route = LibraryRoute) {
         LibraryScreen(
             onHistoryClick = onHistoryClick,
             onSubscriptionClick = onSubscriptionClick,
             onPlaylistClick = onPlaylistClick,
+            onDownloadClick = onDownloadClick,
         )
     }
 }

@@ -5,11 +5,14 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.opux.tubeclient.core.domain.model.SponsorBlockCategory
 import dev.opux.tubeclient.core.domain.preferences.SponsorBlockPreferences
+import dev.opux.tubeclient.core.domain.repository.DownloadActions
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.DeleteDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeletePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSubscriptionsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetWatchHistoryUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObserveDownloadsUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistsUseCase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +26,12 @@ class LibraryViewModel @Inject constructor(
     getHistory: GetWatchHistoryUseCase,
     getSubscriptions: GetSubscriptionsUseCase,
     observePlaylists: ObservePlaylistsUseCase,
+    observeDownloads: ObserveDownloadsUseCase,
+    downloadActions: DownloadActions,
     private val clearAll: ClearWatchHistoryUseCase,
     private val createPlaylist: CreatePlaylistUseCase,
     private val deletePlaylistUseCase: DeletePlaylistUseCase,
+    private val deleteDownload: DeleteDownloadUseCase,
     private val sponsorBlockPreferences: SponsorBlockPreferences,
 ) : ViewModel() {
 
@@ -34,12 +40,18 @@ class LibraryViewModel @Inject constructor(
             getHistory(),
             getSubscriptions(),
             observePlaylists(),
-            sponsorBlockPreferences.enabledCategories,
-        ) { history, subs, playlists, enabled ->
+            observeDownloads(),
+            combine(
+                sponsorBlockPreferences.enabledCategories,
+                downloadActions.statuses,
+            ) { enabled, statuses -> enabled to statuses },
+        ) { history, subs, playlists, downloads, (enabled, statuses) ->
             LibraryUiState(
                 history = history,
                 subscriptions = subs,
                 playlists = playlists,
+                downloads = downloads,
+                downloadStatuses = statuses,
                 sponsorBlockEnabled = enabled,
                 isLoading = false,
             )
@@ -67,5 +79,9 @@ class LibraryViewModel @Inject constructor(
 
     fun onDeletePlaylist(playlistId: Long) {
         viewModelScope.launch { deletePlaylistUseCase(playlistId) }
+    }
+
+    fun onDeleteDownload(videoId: String) {
+        viewModelScope.launch { deleteDownload(videoId) }
     }
 }

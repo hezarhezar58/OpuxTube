@@ -11,10 +11,13 @@ class StreamSelector @Inject constructor() {
 
     fun select(detail: VideoDetail, override: VideoStream? = null): Selection? {
         if (override != null) {
-            // Honor user-picked quality. If the override is a progressive stream
-            // (matches one in `videoStreams`), use it directly; otherwise treat it
-            // as a video-only track and pair with the best audio.
-            val isProgressive = detail.videoStreams.any { it.url == override.url }
+            // Honor user-picked quality. Treat as progressive when:
+            //   - the URL points to a local file (already muxed by us during download)
+            //   - the URL matches one of the progressive tracks from the extractor
+            // Otherwise it's a video-only track that needs to be paired with audio.
+            val isProgressive = override.url.startsWith("file://") ||
+                override.url.startsWith("/") ||
+                detail.videoStreams.any { it.url == override.url }
             if (isProgressive) return Selection.Progressive(override)
             val audio = detail.audioStreams.maxByOrNull { it.bitrate }
             return when (audio) {

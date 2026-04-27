@@ -1,0 +1,15 @@
+package dev.opux.tubeclient.core.domain.model
+
+data class DownloadedVideo(
+    val videoId: String,
+    val videoUrl: String,
+    val title: String,
+    val channelName: String,
+    val thumbnailUrl: String?,
+    val durationSeconds: Long,
+    val filePath: String,
+    val fileSizeBytes: Long,
+    val mimeType: String,
+    val isAudioOnly: Boolean,
+    val downloadedAt: Long,
+)

@@ -58,6 +58,7 @@ fun OpuxNavGraph() {
                 onHistoryClick = { entry -> navController.navigateToPlayer(entry.videoUrl) },
                 onSubscriptionClick = { sub -> navController.navigateToChannel(sub.channelUrl) },
                 onPlaylistClick = { playlist -> navController.navigateToPlaylist(playlist.id) },
+                onDownloadClick = { d -> navController.navigateToPlayer(d.videoUrl) },
             )
             playlistDetailDestination(
                 onBack = { navController.popBackStack() },

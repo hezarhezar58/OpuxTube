@@ -5,6 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.opux.tubeclient.core.domain.repository.ChannelRepository
+import dev.opux.tubeclient.core.domain.repository.DownloadRepository
 import dev.opux.tubeclient.core.domain.repository.PlaylistRepository
 import dev.opux.tubeclient.core.domain.repository.SearchRepository
 import dev.opux.tubeclient.core.domain.repository.SponsorBlockRepository
@@ -15,7 +16,9 @@ import dev.opux.tubeclient.core.domain.repository.WatchHistoryRepository
 import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.DeleteDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeletePlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.FindDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelVideosUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
@@ -25,6 +28,7 @@ import dev.opux.tubeclient.core.domain.usecase.GetTrendingUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetVideoDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.IsSubscribedUseCase
+import dev.opux.tubeclient.core.domain.usecase.ObserveDownloadsUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistEntriesUseCase
 import dev.opux.tubeclient.core.domain.usecase.ObservePlaylistsUseCase
 import dev.opux.tubeclient.core.domain.usecase.RecordWatchEventUseCase
@@ -124,4 +128,16 @@ object UseCaseModule {
     @Singleton
     fun provideRemoveVideoFromPlaylistUseCase(repo: PlaylistRepository) =
         RemoveVideoFromPlaylistUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideObserveDownloadsUseCase(repo: DownloadRepository) = ObserveDownloadsUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideFindDownloadUseCase(repo: DownloadRepository) = FindDownloadUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideDeleteDownloadUseCase(repo: DownloadRepository) = DeleteDownloadUseCase(repo)
 }

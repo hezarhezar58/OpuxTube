@@ -5,11 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.opux.tubeclient.core.domain.model.DownloadStatus
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.SkipSegment
+import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoStream
+import dev.opux.tubeclient.core.domain.repository.DownloadActions
 import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
+import dev.opux.tubeclient.core.domain.usecase.FindDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSkipSegmentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetVideoDetailsUseCase
@@ -33,6 +37,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -53,6 +58,8 @@ class PlayerViewModel @Inject constructor(
     observePlaylists: ObservePlaylistsUseCase,
     private val addVideoToPlaylist: AddVideoToPlaylistUseCase,
     private val createPlaylist: CreatePlaylistUseCase,
+    private val findDownload: FindDownloadUseCase,
+    private val downloadActions: DownloadActions,
 ) : ViewModel() {
 
     private val videoUrl: String = run {
@@ -86,6 +93,15 @@ class PlayerViewModel @Inject constructor(
         initialValue = emptyList(),
     )
 
+    val downloadStatus: StateFlow<DownloadStatus?> =
+        combine(_uiState, downloadActions.statuses) { ui, statuses ->
+            ui.detail?.id?.let { statuses[it] }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null,
+        )
+
     private var progressJob: Job? = null
     private var skipperJob: Job? = null
 
@@ -105,7 +121,24 @@ class PlayerViewModel @Inject constructor(
                 .onSuccess { detail ->
                     _uiState.value = PlayerUiState(isLoading = false, detail = detail)
                     val resumeAt = resolveResumePosition(detail.id, detail.durationSeconds)
-                    controller.play(detail, startPositionMs = resumeAt)
+                    val localOverride = findDownload(detail.id)?.let { downloaded ->
+                        VideoStream(
+                            url = "file://${downloaded.filePath}",
+                            mimeType = downloaded.mimeType,
+                            resolution = "",
+                            width = 0,
+                            height = 0,
+                            bitrate = 0,
+                            framerate = 0,
+                            codec = null,
+                            isAdaptive = false,
+                        )
+                    }
+                    controller.play(
+                        detail = detail,
+                        startPositionMs = resumeAt,
+                        qualityOverride = localOverride,
+                    )
                     recordWatch(detail, progressMs = resumeAt)
                     startProgressTicker(detail.id)
                     fetchAndApplySkipSegments(detail.id)
@@ -177,6 +210,24 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun retry() = loadAndPlay()
+
+    fun onDownload() {
+        val detail = _uiState.value.detail ?: return
+        val stream = pickDownloadStream(detail) ?: run {
+            Timber.w("No progressive stream available for download")
+            return
+        }
+        downloadActions.enqueue(detail, stream)
+    }
+
+    private fun pickDownloadStream(detail: VideoDetail): VideoStream? {
+        // Prefer a progressive stream (audio+video in one file) at 720p or below — these
+        // download to a single playable mp4. Fall back to the highest progressive available.
+        return detail.videoStreams
+            .filter { it.height in 1..720 }
+            .maxByOrNull { it.height }
+            ?: detail.videoStreams.maxByOrNull { it.height }
+    }
 
     fun onSelectQuality(stream: VideoStream?) {
         val detail = _uiState.value.detail ?: return

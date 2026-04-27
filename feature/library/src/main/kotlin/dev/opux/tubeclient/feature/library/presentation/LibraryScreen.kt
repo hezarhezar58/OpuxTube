@@ -20,10 +20,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -53,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import dev.opux.tubeclient.core.domain.model.DownloadStatus
+import dev.opux.tubeclient.core.domain.model.DownloadedVideo
 import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.SponsorBlockCategory
 import dev.opux.tubeclient.core.domain.model.Subscription
@@ -66,6 +71,7 @@ fun LibraryScreen(
     onHistoryClick: (WatchHistoryEntry) -> Unit,
     onSubscriptionClick: (Subscription) -> Unit,
     onPlaylistClick: (Playlist) -> Unit,
+    onDownloadClick: (DownloadedVideo) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
@@ -143,6 +149,12 @@ fun LibraryScreen(
                 Tab(
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 },
+                    text = { Text("İndirilenler") },
+                    modifier = Modifier.testTag("library_tab_downloads"),
+                )
+                Tab(
+                    selected = selectedTab == 4,
+                    onClick = { selectedTab = 4 },
                     text = { Text("Ayarlar") },
                     modifier = Modifier.testTag("library_tab_settings"),
                 )
@@ -167,6 +179,12 @@ fun LibraryScreen(
                         playlists = state.playlists,
                         onClick = onPlaylistClick,
                         onDelete = viewModel::onDeletePlaylist,
+                    )
+                    selectedTab == 3 -> DownloadsTab(
+                        downloads = state.downloads,
+                        statuses = state.downloadStatuses,
+                        onClick = onDownloadClick,
+                        onDelete = viewModel::onDeleteDownload,
                     )
                     else -> SettingsTab(
                         enabled = state.sponsorBlockEnabled,
@@ -402,6 +420,148 @@ private fun CreatePlaylistDialog(
             TextButton(onClick = onDismiss) { Text("İptal") }
         },
     )
+}
+
+@Composable
+private fun DownloadsTab(
+    downloads: List<DownloadedVideo>,
+    statuses: Map<String, DownloadStatus>,
+    onClick: (DownloadedVideo) -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    val activeDownloads = statuses.filter { (id, status) ->
+        // Only show in-flight rows when we don't already have a completed file for the
+        // same id — once the DB row exists the entry list takes over.
+        downloads.none { it.videoId == id } &&
+            (status is DownloadStatus.InProgress || status is DownloadStatus.Queued)
+    }
+    if (downloads.isEmpty() && activeDownloads.isEmpty()) {
+        EmptyMessage(text = "Henüz indirme yok. Bir videoda indirme simgesine dokun.")
+        return
+    }
+    LazyColumn(
+        contentPadding = PaddingValues(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        items(
+            items = activeDownloads.entries.toList(),
+            key = { it.key },
+        ) { (id, status) ->
+            ActiveDownloadRow(
+                videoId = id,
+                status = status,
+                modifier = Modifier.testTag("library_download_active_$id"),
+            )
+        }
+        itemsIndexed(
+            items = downloads,
+            key = { _, d -> d.videoId },
+        ) { index, d ->
+            DownloadRow(
+                downloaded = d,
+                onClick = { onClick(d) },
+                onDelete = { onDelete(d.videoId) },
+                modifier = Modifier.testTag("library_download_$index"),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveDownloadRow(
+    videoId: String,
+    status: DownloadStatus,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+    ) {
+        Text(
+            text = if (status is DownloadStatus.Queued) "Sırada: $videoId" else "İndiriliyor: $videoId",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(Modifier.size(4.dp))
+        if (status is DownloadStatus.InProgress && status.totalBytes > 0) {
+            LinearProgressIndicator(
+                progress = { status.progress },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } else {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+    }
+}
+
+@Composable
+private fun DownloadRow(
+    downloaded: DownloadedVideo,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Download,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = downloaded.title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = "${downloaded.channelName} · ${downloaded.fileSizeBytes.formatBytes()}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        IconButton(
+            onClick = onDelete,
+            modifier = Modifier.testTag("library_download_delete_${downloaded.videoId}"),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Delete,
+                contentDescription = "Silmek",
+            )
+        }
+    }
+}
+
+private fun Long.formatBytes(): String {
+    if (this <= 0L) return "0 B"
+    val mb = this / (1024.0 * 1024.0)
+    return if (mb >= 1024.0) {
+        "%.1f GB".format(mb / 1024.0)
+    } else {
+        "%.1f MB".format(mb)
+    }
 }
 
 @Composable

@@ -102,7 +102,7 @@ fun LibraryScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.DeleteSweep,
-                                    contentDescription = "Geçmişi temizle",
+                                    contentDescription = stringResource(R.string.library_history_clear),
                                 )
                             }
                         }
@@ -113,7 +113,7 @@ fun LibraryScreen(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Add,
-                                    contentDescription = "Yeni liste",
+                                    contentDescription = stringResource(R.string.library_playlist_new_button),
                                 )
                             }
                         }
@@ -226,7 +226,7 @@ private fun HistoryTab(
     onClick: (WatchHistoryEntry) -> Unit,
 ) {
     if (history.isEmpty()) {
-        EmptyMessage(text = "Henüz izleme geçmişin yok")
+        EmptyMessage(text = stringResource(R.string.library_history_empty))
         return
     }
     LazyColumn(
@@ -253,7 +253,7 @@ private fun SubscriptionsTab(
     onClick: (Subscription) -> Unit,
 ) {
     if (subscriptions.isEmpty()) {
-        EmptyMessage(text = "Henüz abone olduğun kanal yok")
+        EmptyMessage(text = stringResource(R.string.library_subscriptions_empty))
         return
     }
     LazyColumn(
@@ -307,7 +307,10 @@ private fun SubscriptionRow(
             )
             if (subscription.subscriberCount > 0) {
                 Text(
-                    text = "${subscription.subscriberCount.formatViewCount()} abone",
+                    text = stringResource(
+                        R.string.library_subscriber_count,
+                        subscription.subscriberCount.formatViewCount(),
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -323,7 +326,7 @@ private fun PlaylistsTab(
     onDelete: (Long) -> Unit,
 ) {
     if (playlists.isEmpty()) {
-        EmptyMessage(text = "Henüz liste oluşturmadın. Sağ üstteki + ile başla.")
+        EmptyMessage(text = stringResource(R.string.library_playlists_empty))
         return
     }
     LazyColumn(
@@ -383,9 +386,9 @@ private fun PlaylistRow(
             )
             Text(
                 text = if (playlist.itemCount == 0) {
-                    "Boş"
+                    stringResource(R.string.library_playlist_empty_label)
                 } else {
-                    "${playlist.itemCount} video"
+                    stringResource(R.string.library_playlist_count, playlist.itemCount)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -397,7 +400,7 @@ private fun PlaylistRow(
         ) {
             Icon(
                 imageVector = Icons.Filled.DeleteSweep,
-                contentDescription = "Listeyi sil",
+                contentDescription = stringResource(R.string.library_playlist_delete),
             )
         }
     }
@@ -411,13 +414,13 @@ private fun CreatePlaylistDialog(
     var name by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Yeni liste") },
+        title = { Text(stringResource(R.string.library_playlist_new_title)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 singleLine = true,
-                label = { Text("Liste adı") },
+                label = { Text(stringResource(R.string.library_playlist_name_label)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("playlist_create_input"),
@@ -428,10 +431,10 @@ private fun CreatePlaylistDialog(
                 onClick = { onConfirm(name) },
                 enabled = name.isNotBlank(),
                 modifier = Modifier.testTag("playlist_create_confirm"),
-            ) { Text("Oluştur") }
+            ) { Text(stringResource(R.string.library_playlist_create)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("İptal") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
         },
     )
 }
@@ -450,7 +453,7 @@ private fun DownloadsTab(
             (status is DownloadStatus.InProgress || status is DownloadStatus.Queued)
     }
     if (downloads.isEmpty() && activeDownloads.isEmpty()) {
-        EmptyMessage(text = "Henüz indirme yok. Bir videoda indirme simgesine dokun.")
+        EmptyMessage(text = stringResource(R.string.library_downloads_empty))
         return
     }
     LazyColumn(
@@ -494,7 +497,11 @@ private fun ActiveDownloadRow(
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Text(
-            text = if (status is DownloadStatus.Queued) "Sırada: $videoId" else "İndiriliyor: $videoId",
+            text = if (status is DownloadStatus.Queued) {
+                stringResource(R.string.library_download_queued, videoId)
+            } else {
+                stringResource(R.string.library_download_in_progress, videoId)
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
@@ -562,7 +569,7 @@ private fun DownloadRow(
         ) {
             Icon(
                 imageVector = Icons.Filled.Delete,
-                contentDescription = "Silmek",
+                contentDescription = stringResource(R.string.library_download_delete),
             )
         }
     }
@@ -722,13 +729,8 @@ private fun SettingsTab(
     if (showConfirmClear) {
         AlertDialog(
             onDismissRequest = { showConfirmClear = false },
-            title = { Text("İndirilenler silinecek") },
-            text = {
-                Text(
-                    "Tüm indirilen videolar ve dosyalar kalıcı olarak silinecek. " +
-                        "Bu işlem geri alınamaz.",
-                )
-            },
+            title = { Text(stringResource(R.string.settings_cache_confirm_title)) },
+            text = { Text(stringResource(R.string.settings_cache_confirm_body)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -736,10 +738,12 @@ private fun SettingsTab(
                         showConfirmClear = false
                     },
                     modifier = Modifier.testTag("library_clear_downloads_confirm"),
-                ) { Text("Sil") }
+                ) { Text(stringResource(R.string.common_delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmClear = false }) { Text("İptal") }
+                TextButton(onClick = { showConfirmClear = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
             },
         )
     }
@@ -791,12 +795,12 @@ private fun SponsorBlockCategoryRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = category.label(),
+                text = stringResource(category.labelRes()),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = category.description(),
+                text = stringResource(category.descriptionRes()),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -805,22 +809,22 @@ private fun SponsorBlockCategoryRow(
     }
 }
 
-private fun SponsorBlockCategory.label(): String = when (this) {
-    SponsorBlockCategory.SPONSOR -> "Sponsor"
-    SponsorBlockCategory.INTRO -> "Giriş"
-    SponsorBlockCategory.OUTRO -> "Bitiş"
-    SponsorBlockCategory.SELF_PROMO -> "Kanal tanıtımı"
-    SponsorBlockCategory.INTERACTION -> "Etkileşim hatırlatması"
-    SponsorBlockCategory.MUSIC_OFFTOPIC -> "Müzik dışı bölüm"
+private fun SponsorBlockCategory.labelRes(): Int = when (this) {
+    SponsorBlockCategory.SPONSOR -> R.string.sb_category_sponsor_label
+    SponsorBlockCategory.INTRO -> R.string.sb_category_intro_label
+    SponsorBlockCategory.OUTRO -> R.string.sb_category_outro_label
+    SponsorBlockCategory.SELF_PROMO -> R.string.sb_category_self_promo_label
+    SponsorBlockCategory.INTERACTION -> R.string.sb_category_interaction_label
+    SponsorBlockCategory.MUSIC_OFFTOPIC -> R.string.sb_category_music_offtopic_label
 }
 
-private fun SponsorBlockCategory.description(): String = when (this) {
-    SponsorBlockCategory.SPONSOR -> "Ücretli sponsor reklamları"
-    SponsorBlockCategory.INTRO -> "Açılış / hook bölümü"
-    SponsorBlockCategory.OUTRO -> "Kapanış / endcard"
-    SponsorBlockCategory.SELF_PROMO -> "Kendi ürün veya kanalını tanıtma"
-    SponsorBlockCategory.INTERACTION -> "Beğen, abone ol gibi hatırlatmalar"
-    SponsorBlockCategory.MUSIC_OFFTOPIC -> "Müzik videolarındaki konuşma kısımları"
+private fun SponsorBlockCategory.descriptionRes(): Int = when (this) {
+    SponsorBlockCategory.SPONSOR -> R.string.sb_category_sponsor_desc
+    SponsorBlockCategory.INTRO -> R.string.sb_category_intro_desc
+    SponsorBlockCategory.OUTRO -> R.string.sb_category_outro_desc
+    SponsorBlockCategory.SELF_PROMO -> R.string.sb_category_self_promo_desc
+    SponsorBlockCategory.INTERACTION -> R.string.sb_category_interaction_desc
+    SponsorBlockCategory.MUSIC_OFFTOPIC -> R.string.sb_category_music_offtopic_desc
 }
 
 @Composable

@@ -21,6 +21,12 @@
     <string name="library_playlist_empty_label">Empty</string>
     <string name="library_downloads_empty">No downloads. Tap the download icon on any video.</string>
     <string name="library_download_delete">Delete</string>
+    <string name="library_download_queued">Queued: %1$s</string>
+    <string name="library_download_in_progress">Downloading: %1$s</string>
+    <string name="library_subscriber_count">%1$s subscribers</string>
+    <string name="library_playlist_detail_empty">This playlist is empty. Add videos from any video page.</string>
+    <string name="library_playlist_remove_item">Remove from playlist</string>
+    <string name="library_playlist_title_fallback">Playlist</string>
 
     <string name="settings_cache_header">Cache</string>
     <string name="settings_cache_empty">No downloaded videos</string>
@@ -44,6 +50,20 @@
     <string name="settings_sponsorblock_header">SponsorBlock categories</string>
     <string name="settings_sponsorblock_subtitle">Pick which segments to skip</string>
 
+    <string name="sb_category_sponsor_label">Sponsor</string>
+    <string name="sb_category_sponsor_desc">Paid sponsor segments</string>
+    <string name="sb_category_intro_label">Intro</string>
+    <string name="sb_category_intro_desc">Opening / hook</string>
+    <string name="sb_category_outro_label">Outro</string>
+    <string name="sb_category_outro_desc">Closing / endcard</string>
+    <string name="sb_category_self_promo_label">Self-promo</string>
+    <string name="sb_category_self_promo_desc">Promoting their own products or channel</string>
+    <string name="sb_category_interaction_label">Interaction reminder</string>
+    <string name="sb_category_interaction_desc">Like, subscribe, or similar reminders</string>
+    <string name="sb_category_music_offtopic_label">Off-topic in music videos</string>
+    <string name="sb_category_music_offtopic_desc">Talk segments inside music videos</string>
+
     <string name="common_cancel">Cancel</string>
     <string name="common_delete">Delete</string>
+    <string name="common_back">Back</string>
 </resources>

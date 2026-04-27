@@ -36,12 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import dev.opux.tubeclient.core.domain.model.PlaylistEntry
+import dev.opux.tubeclient.feature.library.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +61,9 @@ fun PlaylistDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = state.playlistName.ifEmpty { "Liste" },
+                        text = state.playlistName.ifEmpty {
+                            stringResource(R.string.library_playlist_title_fallback)
+                        },
                         style = MaterialTheme.typography.titleLarge,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -72,7 +76,7 @@ fun PlaylistDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.common_back),
                         )
                     }
                 },
@@ -103,7 +107,7 @@ fun PlaylistDetailScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
-                        text = "Bu listede henüz video yok. Bir videoda ekleme yapabilirsin.",
+                        text = stringResource(R.string.library_playlist_detail_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -183,7 +187,7 @@ private fun PlaylistEntryRow(
         ) {
             Icon(
                 imageVector = Icons.Filled.Close,
-                contentDescription = "Listeden kaldır",
+                contentDescription = stringResource(R.string.library_playlist_remove_item),
             )
         }
     }

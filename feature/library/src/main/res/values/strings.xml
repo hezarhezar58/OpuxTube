@@ -22,6 +22,12 @@
     <string name="library_playlist_empty_label">Boş</string>
     <string name="library_downloads_empty">Henüz indirme yok. Bir videoda indirme simgesine dokun.</string>
     <string name="library_download_delete">Silmek</string>
+    <string name="library_download_queued">Sırada: %1$s</string>
+    <string name="library_download_in_progress">İndiriliyor: %1$s</string>
+    <string name="library_subscriber_count">%1$s abone</string>
+    <string name="library_playlist_detail_empty">Bu listede henüz video yok. Bir videoda ekleme yapabilirsin.</string>
+    <string name="library_playlist_remove_item">Listeden kaldır</string>
+    <string name="library_playlist_title_fallback">Liste</string>
 
     <!-- Settings sections -->
     <string name="settings_cache_header">Önbellek</string>
@@ -46,7 +52,22 @@
     <string name="settings_sponsorblock_header">SponsorBlock kategorileri</string>
     <string name="settings_sponsorblock_subtitle">Atlamak istediğin segment türlerini seç</string>
 
+    <!-- SponsorBlock category labels and descriptions -->
+    <string name="sb_category_sponsor_label">Sponsor</string>
+    <string name="sb_category_sponsor_desc">Ücretli sponsor reklamları</string>
+    <string name="sb_category_intro_label">Giriş</string>
+    <string name="sb_category_intro_desc">Açılış / hook bölümü</string>
+    <string name="sb_category_outro_label">Bitiş</string>
+    <string name="sb_category_outro_desc">Kapanış / endcard</string>
+    <string name="sb_category_self_promo_label">Kanal tanıtımı</string>
+    <string name="sb_category_self_promo_desc">Kendi ürün veya kanalını tanıtma</string>
+    <string name="sb_category_interaction_label">Etkileşim hatırlatması</string>
+    <string name="sb_category_interaction_desc">Beğen, abone ol gibi hatırlatmalar</string>
+    <string name="sb_category_music_offtopic_label">Müzik dışı bölüm</string>
+    <string name="sb_category_music_offtopic_desc">Müzik videolarındaki konuşma kısımları</string>
+
     <!-- Common -->
     <string name="common_cancel">İptal</string>
     <string name="common_delete">Sil</string>
+    <string name="common_back">Geri</string>
 </resources>

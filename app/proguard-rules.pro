@@ -5,6 +5,11 @@
 -keep class org.mozilla.classfile.** { *; }
 -dontwarn org.mozilla.javascript.**
 
+# jsoup ships an optional re2j regex backend that we don't include — it falls back
+# to java.util.regex at runtime, so silence the missing-class warnings.
+-dontwarn com.google.re2j.Matcher
+-dontwarn com.google.re2j.Pattern
+
 # ---- Media3 ----
 -keep class androidx.media3.** { *; }
 -dontwarn androidx.media3.**

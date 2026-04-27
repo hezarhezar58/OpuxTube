@@ -21,6 +21,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
 
     sourceSets["main"].kotlin.srcDir("src/main/kotlin")
+    sourceSets["test"].kotlin.srcDir("src/test/kotlin")
 }
 
 dependencies {
@@ -36,4 +37,8 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.timber)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
 }

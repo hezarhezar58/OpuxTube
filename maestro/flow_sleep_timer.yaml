@@ -30,7 +30,10 @@ appId: dev.opux.tubeclient.debug
     timeout: 3000
 - tapOn:
     id: "player_sleep_timer"
-- assertVisible: "Kalan:"
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertVisible:
+    text: "Kalan:.*"
 - takeScreenshot: 03_sleep_active
 
 # Cancel the timer.
@@ -39,5 +42,8 @@ appId: dev.opux.tubeclient.debug
     timeout: 3000
 - tapOn:
     id: "player_sleep_timer"
-- assertNotVisible: "Kalan:"
+- waitForAnimationToEnd:
+    timeout: 3000
+- assertNotVisible:
+    text: "Kalan:.*"
 - takeScreenshot: 04_sleep_canceled

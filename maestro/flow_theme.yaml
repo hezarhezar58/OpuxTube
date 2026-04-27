@@ -21,10 +21,20 @@ appId: dev.opux.tubeclient.debug
 - tapOn:
     id: "library_theme_light"
 - assertVisible: "Tema"
-- assertVisible: "SponsorBlock kategorileri"
+# Locale picker now sits between theme and SponsorBlock — scroll to surface
+# the SponsorBlock header on shorter viewports.
+- scrollUntilVisible:
+    element: "SponsorBlock kategorileri"
+    direction: DOWN
+    timeout: 5000
 - takeScreenshot: 02_settings_light
 
 # Flip to dark, then back to system.
+- scrollUntilVisible:
+    element:
+      id: "library_theme_dark"
+    direction: UP
+    timeout: 5000
 - tapOn:
     id: "library_theme_dark"
 - assertVisible: "Tema"

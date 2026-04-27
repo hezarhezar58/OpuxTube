@@ -597,6 +597,7 @@ private fun VideoSurface(
                         this.player = player
                         useController = true
                         controllerAutoShow = true
+                        setShowSubtitleButton(true)
                         setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
                     }
                 },

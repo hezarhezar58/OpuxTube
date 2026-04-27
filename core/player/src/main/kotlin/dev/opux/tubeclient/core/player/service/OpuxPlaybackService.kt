@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -144,15 +145,31 @@ class OpuxPlaybackService : MediaSessionService() {
             val title = args.getString(ARG_TITLE)
             val artist = args.getString(ARG_ARTIST)
             val artworkUrl = args.getString(ARG_ARTWORK_URL)
+            val subtitleEntries = args.getStringArray(ARG_SUBTITLES).orEmpty()
 
             val mediaMetadata = MediaMetadata.Builder()
                 .setTitle(title)
                 .setArtist(artist)
                 .apply { artworkUrl?.let { setArtworkUri(Uri.parse(it)) } }
                 .build()
+            val subtitleConfigurations = subtitleEntries.mapNotNull { entry ->
+                // Format: url|languageTag|displayName|mimeType — see ExoMediaPlayerController.
+                val parts = entry.split('|', limit = 4)
+                if (parts.size < 4 || parts[0].isBlank()) return@mapNotNull null
+                MediaItem.SubtitleConfiguration.Builder(Uri.parse(parts[0]))
+                    .setMimeType(parts[3].ifBlank { MimeTypes.TEXT_VTT })
+                    .setLanguage(parts[1].ifBlank { null })
+                    .setLabel(parts[2].ifBlank { null })
+                    .build()
+            }
             val videoMediaItem = MediaItem.Builder()
                 .setUri(videoUrl)
                 .setMediaMetadata(mediaMetadata)
+                .apply {
+                    if (subtitleConfigurations.isNotEmpty()) {
+                        setSubtitleConfigurations(subtitleConfigurations)
+                    }
+                }
                 .build()
 
             val source: MediaSource = if (!audioUrl.isNullOrBlank()) {
@@ -203,6 +220,7 @@ class OpuxPlaybackService : MediaSessionService() {
         const val ARG_TITLE = "title"
         const val ARG_ARTIST = "artist"
         const val ARG_ARTWORK_URL = "artworkUrl"
+        const val ARG_SUBTITLES = "subtitles"
 
         private const val CHANNEL_ID = "opux_playback"
         private const val PLACEHOLDER_NOTIFICATION_ID = 0xC100

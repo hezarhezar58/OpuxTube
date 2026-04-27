@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- TopAppBar -->
+    <string name="player_back">Geri</string>
+    <string name="player_share">Paylaş</string>
+    <string name="player_download">İndir</string>
+    <string name="player_sleep_timer">Uyku zamanlayıcısı</string>
+    <string name="player_speed">Hız</string>
+    <string name="player_quality">Kalite</string>
+    <string name="player_playlist_add">Listeye ekle</string>
+    <string name="player_fullscreen_enter">Tam ekran</string>
+    <string name="player_fullscreen_exit">Tam ekrandan çık</string>
+    <string name="player_title_fallback">Oynatıcı</string>
+
+    <!-- Detail / Description -->
+    <string name="player_view_count">%1$s görüntülenme</string>
+
+    <!-- Comments -->
+    <string name="player_comments_title">Yorumlar</string>
+    <string name="player_comments_title_with_count">Yorumlar (%1$d)</string>
+    <string name="player_comments_loading">Yorumlar yükleniyor…</string>
+    <string name="player_comments_failed">Yorumlar alınamadı</string>
+    <string name="player_comments_empty">Yorum bulunamadı.</string>
+    <string name="player_comments_more">+ %1$d yorum daha</string>
+    <string name="player_replies_show">%1$d yanıtı göster</string>
+    <string name="player_replies_hide">Yanıtları gizle</string>
+    <string name="player_replies_loading">Yanıtlar yükleniyor…</string>
+    <string name="player_reply_count">%1$d yanıt</string>
+
+    <!-- Related -->
+    <string name="player_related_header">İlgili videolar</string>
+
+    <!-- Skip toast -->
+    <string name="player_skipped_segment">Atlandı: %1$s (%2$ds)</string>
+
+    <!-- Playlist sheet -->
+    <string name="player_playlist_sheet_title">Listeye ekle</string>
+    <string name="player_playlist_create_new">Yeni liste oluştur</string>
+    <string name="player_playlist_empty">Henüz liste yok</string>
+    <string name="player_playlist_video_count">%1$d video</string>
+    <string name="player_playlist_empty_label">Boş</string>
+    <string name="player_playlist_added">\"%1$s\" listesine eklendi</string>
+    <string name="player_playlist_added_generic">Listeye eklendi</string>
+    <string name="player_playlist_dialog_title">Yeni liste</string>
+    <string name="player_playlist_dialog_label">Liste adı</string>
+    <string name="player_playlist_dialog_create">Oluştur ve ekle</string>
+
+    <!-- Quality sheet -->
+    <string name="player_quality_sheet_title">Kalite</string>
+    <string name="player_quality_auto">Otomatik</string>
+
+    <!-- Speed sheet -->
+    <string name="player_speed_sheet_title">Oynatma hızı</string>
+    <string name="player_speed_normal">Normal (1x)</string>
+
+    <!-- Sleep timer sheet -->
+    <string name="player_sleep_sheet_title">Uyku zamanlayıcısı</string>
+    <string name="player_sleep_off">Kapalı</string>
+    <string name="player_sleep_remaining">Kalan: ~%1$d dakika</string>
+    <string name="player_sleep_5">5 dakika</string>
+    <string name="player_sleep_15">15 dakika</string>
+    <string name="player_sleep_30">30 dakika</string>
+    <string name="player_sleep_60">60 dakika</string>
+
+    <!-- Common -->
+    <string name="player_cancel">İptal</string>
+    <string name="player_retry">Yeniden dene</string>
+    <string name="player_load_failed">Video yüklenemedi</string>
+    <string name="player_share_chooser">Paylaş</string>
+    <string name="player_error_generic">Hata</string>
+</resources>

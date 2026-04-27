@@ -63,6 +63,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -86,6 +87,7 @@ import dev.opux.tubeclient.core.domain.model.Playlist
 import dev.opux.tubeclient.core.domain.model.VideoDetail
 import dev.opux.tubeclient.core.domain.model.VideoPreview
 import dev.opux.tubeclient.core.domain.model.VideoStream
+import dev.opux.tubeclient.feature.player.R
 import dev.opux.tubeclient.core.ui.component.VideoCard
 import dev.opux.tubeclient.core.ui.util.formatRelativeUploadDate
 import dev.opux.tubeclient.core.ui.util.formatViewCount
@@ -154,7 +156,11 @@ fun PlayerScreen(
     LaunchedEffect(viewModel) {
         viewModel.skipEvents.collect { event ->
             snackbarHostState.showSnackbar(
-                message = "Atlandı: ${event.category.toTurkishLabel()} (${(event.durationMs / 1000L)}s)",
+                message = context.getString(
+                    R.string.player_skipped_segment,
+                    event.category.toTurkishLabel(),
+                    (event.durationMs / 1000L).toInt(),
+                ),
                 duration = SnackbarDuration.Short,
             )
         }
@@ -162,7 +168,11 @@ fun PlayerScreen(
     LaunchedEffect(viewModel) {
         viewModel.playlistAddedEvents.collect { name ->
             snackbarHostState.showSnackbar(
-                message = if (name.isEmpty()) "Listeye eklendi" else "\"$name\" listesine eklendi",
+                message = if (name.isEmpty()) {
+                    context.getString(R.string.player_playlist_added_generic)
+                } else {
+                    context.getString(R.string.player_playlist_added, name)
+                },
                 duration = SnackbarDuration.Short,
             )
         }
@@ -227,7 +237,7 @@ fun PlayerScreen(
             ) {
                 Icon(
                     imageVector = Icons.Filled.FullscreenExit,
-                    contentDescription = "Tam ekrandan çık",
+                    contentDescription = stringResource(R.string.player_fullscreen_exit),
                     tint = Color.White,
                 )
             }
@@ -242,7 +252,7 @@ fun PlayerScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = uiState.detail?.title ?: "Oynatıcı",
+                        text = uiState.detail?.title ?: stringResource(R.string.player_title_fallback),
                         style = MaterialTheme.typography.titleMedium,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -255,7 +265,7 @@ fun PlayerScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Geri",
+                            contentDescription = stringResource(R.string.player_back),
                         )
                     }
                 },
@@ -270,14 +280,17 @@ fun PlayerScreen(
                                     putExtra(Intent.EXTRA_SUBJECT, detail.title)
                                 }
                                 context.startActivity(
-                                    Intent.createChooser(intent, "Paylaş"),
+                                    Intent.createChooser(
+                                        intent,
+                                        context.getString(R.string.player_share_chooser),
+                                    ),
                                 )
                             },
                             modifier = Modifier.testTag("player_share"),
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Share,
-                                contentDescription = "Paylaş",
+                                contentDescription = stringResource(R.string.player_share),
                             )
                         }
                         IconButton(
@@ -293,7 +306,7 @@ fun PlayerScreen(
                                     is DownloadStatus.Queued -> Icons.Filled.Downloading
                                     else -> Icons.Filled.Download
                                 },
-                                contentDescription = "İndir",
+                                contentDescription = stringResource(R.string.player_download),
                             )
                         }
                         IconButton(
@@ -302,7 +315,7 @@ fun PlayerScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Bedtime,
-                                contentDescription = "Uyku zamanlayıcısı",
+                                contentDescription = stringResource(R.string.player_sleep_timer),
                                 tint = if (uiState.sleepTimerEndAtMs != null) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
@@ -316,7 +329,7 @@ fun PlayerScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Speed,
-                                contentDescription = "Hız",
+                                contentDescription = stringResource(R.string.player_speed),
                             )
                         }
                         IconButton(
@@ -325,7 +338,7 @@ fun PlayerScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.HighQuality,
-                                contentDescription = "Kalite",
+                                contentDescription = stringResource(R.string.player_quality),
                             )
                         }
                         IconButton(
@@ -334,7 +347,7 @@ fun PlayerScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
-                                contentDescription = "Listeye ekle",
+                                contentDescription = stringResource(R.string.player_playlist_add),
                             )
                         }
                     }
@@ -360,7 +373,7 @@ fun PlayerScreen(
             when {
                 uiState.isLoading -> CenteredLoading()
                 uiState.error != null -> ErrorView(
-                    message = uiState.error ?: "Hata",
+                    message = uiState.error ?: stringResource(R.string.player_error_generic),
                     onRetry = viewModel::retry,
                 )
                 uiState.detail != null -> DetailContent(
@@ -412,8 +425,9 @@ fun PlayerScreen(
     if (showQualitySheet) {
         val detail = uiState.detail
         if (detail != null) {
+            val autoLabel = stringResource(R.string.player_quality_auto)
             QualityPickerSheet(
-                options = buildQualityOptions(detail),
+                options = buildQualityOptions(detail, autoLabel),
                 selected = uiState.qualityOverride,
                 onPick = { stream ->
                     viewModel.onSelectQuality(stream)
@@ -454,11 +468,11 @@ private fun SleepTimerSheet(
 ) {
     val sheetState = rememberModalBottomSheetState()
     val options: List<Pair<String, Long?>> = listOf(
-        "Kapalı" to null,
-        "5 dakika" to 5 * 60_000L,
-        "15 dakika" to 15 * 60_000L,
-        "30 dakika" to 30 * 60_000L,
-        "60 dakika" to 60 * 60_000L,
+        stringResource(R.string.player_sleep_off) to null,
+        stringResource(R.string.player_sleep_5) to 5 * 60_000L,
+        stringResource(R.string.player_sleep_15) to 15 * 60_000L,
+        stringResource(R.string.player_sleep_30) to 30 * 60_000L,
+        stringResource(R.string.player_sleep_60) to 60 * 60_000L,
     )
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -467,7 +481,7 @@ private fun SleepTimerSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Uyku zamanlayıcısı",
+                text = stringResource(R.string.player_sleep_sheet_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -476,7 +490,7 @@ private fun SleepTimerSheet(
                 val remainingMin = ((activeEndAtMs - System.currentTimeMillis()).coerceAtLeast(0L) /
                     60_000L).toInt()
                 Text(
-                    text = "Kalan: ~${remainingMin} dakika",
+                    text = stringResource(R.string.player_sleep_remaining, remainingMin),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -531,7 +545,7 @@ private fun SpeedPickerSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Oynatma hızı",
+                text = stringResource(R.string.player_speed_sheet_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -548,7 +562,11 @@ private fun SpeedPickerSheet(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = if (speed == 1.0f) "Normal (1x)" else "${speed}x",
+                            text = if (speed == 1.0f) {
+                                stringResource(R.string.player_speed_normal)
+                            } else {
+                                "${speed}x"
+                            },
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
@@ -568,13 +586,13 @@ private fun SpeedPickerSheet(
     }
 }
 
-private fun buildQualityOptions(detail: VideoDetail): List<QualityOption> {
+private fun buildQualityOptions(detail: VideoDetail, autoLabel: String): List<QualityOption> {
     val all = (detail.videoStreams + detail.videoOnlyStreams)
         .filter { it.height > 0 }
         .distinctBy { it.height }
         .sortedByDescending { it.height }
     return buildList {
-        add(QualityOption(label = "Otomatik", stream = null))
+        add(QualityOption(label = autoLabel, stream = null))
         addAll(all.map { QualityOption(label = "${it.height}p", stream = it) })
     }
 }
@@ -595,7 +613,7 @@ private fun QualityPickerSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Kalite",
+                text = stringResource(R.string.player_quality_sheet_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -649,7 +667,7 @@ private fun PlaylistPickerSheet(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Listeye ekle",
+                text = stringResource(R.string.player_playlist_sheet_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -669,7 +687,7 @@ private fun PlaylistPickerSheet(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    text = "Yeni liste oluştur",
+                    text = stringResource(R.string.player_playlist_create_new),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -677,7 +695,7 @@ private fun PlaylistPickerSheet(
             HorizontalDivider()
             if (playlists.isEmpty()) {
                 Text(
-                    text = "Henüz liste yok",
+                    text = stringResource(R.string.player_playlist_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
@@ -702,7 +720,14 @@ private fun PlaylistPickerSheet(
                                     overflow = TextOverflow.Ellipsis,
                                 )
                                 Text(
-                                    text = if (p.itemCount == 0) "Boş" else "${p.itemCount} video",
+                                    text = if (p.itemCount == 0) {
+                                        stringResource(R.string.player_playlist_empty_label)
+                                    } else {
+                                        stringResource(
+                                            R.string.player_playlist_video_count,
+                                            p.itemCount,
+                                        )
+                                    },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
@@ -724,13 +749,13 @@ private fun NewPlaylistDialog(
     var name by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Yeni liste") },
+        title = { Text(stringResource(R.string.player_playlist_dialog_title)) },
         text = {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 singleLine = true,
-                label = { Text("Liste adı") },
+                label = { Text(stringResource(R.string.player_playlist_dialog_label)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("player_playlist_create_input"),
@@ -741,10 +766,10 @@ private fun NewPlaylistDialog(
                 onClick = { onConfirm(name) },
                 enabled = name.isNotBlank(),
                 modifier = Modifier.testTag("player_playlist_create_confirm"),
-            ) { Text("Oluştur ve ekle") }
+            ) { Text(stringResource(R.string.player_playlist_dialog_create)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("İptal") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.player_cancel)) }
         },
     )
 }
@@ -790,7 +815,7 @@ private fun VideoSurface(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Fullscreen,
-                    contentDescription = "Tam ekran",
+                    contentDescription = stringResource(R.string.player_fullscreen_enter),
                     tint = Color.White,
                 )
             }
@@ -826,11 +851,16 @@ private fun DetailContent(
                     detail = detail,
                     onClick = { onChannelClick(detail.channel.url) },
                 )
+                val viewCountLabel = if (detail.viewCount > 0) {
+                    stringResource(
+                        R.string.player_view_count,
+                        detail.viewCount.formatViewCount(),
+                    )
+                } else {
+                    ""
+                }
                 val meta = buildString {
-                    if (detail.viewCount > 0) {
-                        append(detail.viewCount.formatViewCount())
-                        append(" görüntülenme")
-                    }
+                    if (viewCountLabel.isNotEmpty()) append(viewCountLabel)
                     detail.uploadedAt.formatRelativeUploadDate()?.let {
                         if (isNotEmpty()) append(" · ")
                         append(it)
@@ -864,7 +894,7 @@ private fun DetailContent(
         if (detail.relatedVideos.isNotEmpty()) {
             item {
                 Text(
-                    text = "İlgili videolar",
+                    text = stringResource(R.string.player_related_header),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -897,7 +927,11 @@ private fun CommentsSection(
             .testTag("player_comments"),
     ) {
         Text(
-            text = if (state.items.isEmpty()) "Yorumlar" else "Yorumlar (${state.items.size})",
+            text = if (state.items.isEmpty()) {
+                stringResource(R.string.player_comments_title)
+            } else {
+                stringResource(R.string.player_comments_title_with_count, state.items.size)
+            },
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -912,7 +946,7 @@ private fun CommentsSection(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Yorumlar yükleniyor…",
+                    text = stringResource(R.string.player_comments_loading),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -923,7 +957,7 @@ private fun CommentsSection(
                 color = MaterialTheme.colorScheme.error,
             )
             state.items.isEmpty() -> Text(
-                text = "Yorum bulunamadı.",
+                text = stringResource(R.string.player_comments_empty),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -938,7 +972,10 @@ private fun CommentsSection(
                 }
                 if (state.items.size > MAX_COMMENT_PREVIEW) {
                     Text(
-                        text = "+ ${state.items.size - MAX_COMMENT_PREVIEW} yorum daha",
+                        text = stringResource(
+                            R.string.player_comments_more,
+                            state.items.size - MAX_COMMENT_PREVIEW,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -1008,7 +1045,11 @@ private fun CommentRow(
                 if (comment.replyCount > 0 && comment.repliesToken != null) {
                     val expanded = replies is RepliesState.Loaded
                     Text(
-                        text = if (expanded) "Yanıtları gizle" else "${comment.replyCount} yanıtı göster",
+                        text = if (expanded) {
+                            stringResource(R.string.player_replies_hide)
+                        } else {
+                            stringResource(R.string.player_replies_show, comment.replyCount)
+                        },
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
@@ -1018,7 +1059,7 @@ private fun CommentRow(
                     )
                 } else if (comment.replyCount > 0) {
                     Text(
-                        text = "${comment.replyCount} yanıt",
+                        text = stringResource(R.string.player_reply_count, comment.replyCount),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -1037,7 +1078,7 @@ private fun CommentRow(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Yanıtlar yükleniyor…",
+                    text = stringResource(R.string.player_replies_loading),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1169,7 +1210,7 @@ private fun ErrorView(message: String, onRetry: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(text = message, style = MaterialTheme.typography.bodyMedium)
-            Button(onClick = onRetry) { Text("Yeniden dene") }
+            Button(onClick = onRetry) { Text(stringResource(R.string.player_retry)) }
         }
     }
 }

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="player_back">Back</string>
+    <string name="player_share">Share</string>
+    <string name="player_download">Download</string>
+    <string name="player_sleep_timer">Sleep timer</string>
+    <string name="player_speed">Speed</string>
+    <string name="player_quality">Quality</string>
+    <string name="player_playlist_add">Add to playlist</string>
+    <string name="player_fullscreen_enter">Fullscreen</string>
+    <string name="player_fullscreen_exit">Exit fullscreen</string>
+    <string name="player_title_fallback">Player</string>
+
+    <string name="player_view_count">%1$s views</string>
+
+    <string name="player_comments_title">Comments</string>
+    <string name="player_comments_title_with_count">Comments (%1$d)</string>
+    <string name="player_comments_loading">Loading comments…</string>
+    <string name="player_comments_failed">Comments unavailable</string>
+    <string name="player_comments_empty">No comments.</string>
+    <string name="player_comments_more">+ %1$d more comments</string>
+    <string name="player_replies_show">Show %1$d replies</string>
+    <string name="player_replies_hide">Hide replies</string>
+    <string name="player_replies_loading">Loading replies…</string>
+    <string name="player_reply_count">%1$d replies</string>
+
+    <string name="player_related_header">Related</string>
+
+    <string name="player_skipped_segment">Skipped: %1$s (%2$ds)</string>
+
+    <string name="player_playlist_sheet_title">Add to playlist</string>
+    <string name="player_playlist_create_new">Create new playlist</string>
+    <string name="player_playlist_empty">No playlists yet</string>
+    <string name="player_playlist_video_count">%1$d videos</string>
+    <string name="player_playlist_empty_label">Empty</string>
+    <string name="player_playlist_added">Added to \"%1$s\"</string>
+    <string name="player_playlist_added_generic">Added to playlist</string>
+    <string name="player_playlist_dialog_title">New playlist</string>
+    <string name="player_playlist_dialog_label">Playlist name</string>
+    <string name="player_playlist_dialog_create">Create and add</string>
+
+    <string name="player_quality_sheet_title">Quality</string>
+    <string name="player_quality_auto">Auto</string>
+
+    <string name="player_speed_sheet_title">Playback speed</string>
+    <string name="player_speed_normal">Normal (1x)</string>
+
+    <string name="player_sleep_sheet_title">Sleep timer</string>
+    <string name="player_sleep_off">Off</string>
+    <string name="player_sleep_remaining">Remaining: ~%1$d minutes</string>
+    <string name="player_sleep_5">5 minutes</string>
+    <string name="player_sleep_15">15 minutes</string>
+    <string name="player_sleep_30">30 minutes</string>
+    <string name="player_sleep_60">60 minutes</string>
+
+    <string name="player_cancel">Cancel</string>
+    <string name="player_retry">Retry</string>
+    <string name="player_load_failed">Failed to load video</string>
+    <string name="player_share_chooser">Share</string>
+    <string name="player_error_generic">Error</string>
+</resources>

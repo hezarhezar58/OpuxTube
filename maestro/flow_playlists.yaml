@@ -1,0 +1,62 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- takeScreenshot: 01_home_fresh
+
+# Open the first video so we can add it to a playlist.
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_playlist_add"
+    timeout: 25000
+
+# Open the picker sheet, then create a new playlist on the fly.
+- tapOn:
+    id: "player_playlist_add"
+- assertVisible: "Listeye ekle"
+# ModalBottomSheet renders in a separate window without our test tags;
+# match on the visible Turkish label instead.
+- tapOn: "Yeni liste oluştur"
+- assertVisible: "Yeni liste"
+- tapOn: "Liste adı"
+- inputText: "Maestro Listesi"
+- tapOn: "Oluştur ve ekle"
+- takeScreenshot: 02_playlist_created_and_video_added
+
+# Re-open the sheet to confirm the freshly created playlist now shows.
+- tapOn:
+    id: "player_playlist_add"
+- assertVisible: "Maestro Listesi"
+# ModalBottomSheet has no Cancel button — dismiss with system back.
+- pressKey: BACK
+
+# Navigate to Library → Listeler tab and confirm the new playlist row.
+- tapOn:
+    id: "player_back"
+- tapOn:
+    id: "nav_library"
+- tapOn:
+    id: "library_tab_playlists"
+- extendedWaitUntil:
+    visible:
+      id: "library_playlist_0"
+    timeout: 10000
+- assertVisible: "Maestro Listesi"
+- assertVisible: "1 video"
+- takeScreenshot: 03_library_playlists_tab
+
+# Open the playlist; the video we added should be the only entry.
+- tapOn:
+    id: "library_playlist_0"
+- extendedWaitUntil:
+    visible:
+      id: "playlist_entry_0"
+    timeout: 10000
+- takeScreenshot: 04_playlist_detail

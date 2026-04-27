@@ -1,0 +1,35 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+
+# Library → Ayarlar (4th tab, index 4 in the tabs since the addition of
+# İndirilenler — by id rather than position).
+- tapOn:
+    id: "nav_library"
+- tapOn:
+    id: "library_tab_settings"
+- assertVisible: "Tema"
+- takeScreenshot: 01_settings_default
+
+# Switch to light mode and confirm the system tab still functions.
+- tapOn:
+    id: "library_theme_light"
+- assertVisible: "Tema"
+- assertVisible: "SponsorBlock kategorileri"
+- takeScreenshot: 02_settings_light
+
+# Flip to dark, then back to system.
+- tapOn:
+    id: "library_theme_dark"
+- assertVisible: "Tema"
+- takeScreenshot: 03_settings_dark
+- tapOn:
+    id: "library_theme_system"
+- assertVisible: "Tema"
+- takeScreenshot: 04_settings_system

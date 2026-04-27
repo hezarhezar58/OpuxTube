@@ -1,0 +1,38 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_quality"
+    timeout: 25000
+- takeScreenshot: 01_player_ready
+
+# Open the quality picker. The bottom sheet renders in a separate window
+# without our test tags, so we match by visible text.
+- tapOn:
+    id: "player_quality"
+- assertVisible: "Kalite"
+- assertVisible: "Otomatik"
+- takeScreenshot: 02_quality_sheet_open
+
+# 720p is present on every YouTube progressive stream.
+- tapOn: "720p"
+- waitForAnimationToEnd:
+    timeout: 5000
+- assertVisible:
+    id: "player_surface"
+- takeScreenshot: 03_after_quality_select
+
+# Re-open the sheet — playback should still be alive and the picker still works.
+- tapOn:
+    id: "player_quality"
+- assertVisible: "Kalite"
+- pressKey: BACK

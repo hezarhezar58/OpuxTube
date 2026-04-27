@@ -1,5 +1,6 @@
 package dev.opux.tubeclient
 
+import android.Manifest
 import android.app.PendingIntent
 import android.app.PictureInPictureParams
 import android.app.RemoteAction
@@ -7,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.os.Build
@@ -14,7 +16,9 @@ import android.os.Bundle
 import android.util.Rational
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.CompositionLocalProvider
@@ -55,6 +59,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // POST_NOTIFICATIONS is runtime-prompted on Android 13+. We don't gate any feature on the
+    // result — playback runs as a foreground media service either way — but without the grant
+    // the system silently drops our notification, so the user can't see/control playback from
+    // the shade. Kept fire-and-forget; ignore the boolean callback.
+    private val requestNotificationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* ignore */ }
+
     private val pipReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action != ACTION_PIP_CONTROL) return
@@ -81,6 +92,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        maybeRequestNotificationPermission()
         setContent {
             val themeMode by appPreferences.themeMode.collectAsState(initial = ThemeMode.SYSTEM)
             OpuxTubeTheme(themeMode = themeMode) {
@@ -93,6 +105,17 @@ class MainActivity : AppCompatActivity() {
         }
         registerPipReceiver()
         observePlayerForPipUpdates()
+    }
+
+    private fun maybeRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!granted) {
+            requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     private fun registerPipReceiver() {

@@ -4,10 +4,22 @@
 
     <!-- Relative upload date -->
     <string name="core_just_now">az önce</string>
-    <string name="core_minutes_ago">%1$d dakika önce</string>
-    <string name="core_hours_ago">%1$d saat önce</string>
-    <string name="core_days_ago">%1$d gün önce</string>
-    <string name="core_weeks_ago">%1$d hafta önce</string>
-    <string name="core_months_ago">%1$d ay önce</string>
-    <string name="core_years_ago">%1$d yıl önce</string>
+    <plurals name="core_minutes_ago">
+        <item quantity="other">%1$d dakika önce</item>
+    </plurals>
+    <plurals name="core_hours_ago">
+        <item quantity="other">%1$d saat önce</item>
+    </plurals>
+    <plurals name="core_days_ago">
+        <item quantity="other">%1$d gün önce</item>
+    </plurals>
+    <plurals name="core_weeks_ago">
+        <item quantity="other">%1$d hafta önce</item>
+    </plurals>
+    <plurals name="core_months_ago">
+        <item quantity="other">%1$d ay önce</item>
+    </plurals>
+    <plurals name="core_years_ago">
+        <item quantity="other">%1$d yıl önce</item>
+    </plurals>
 </resources>

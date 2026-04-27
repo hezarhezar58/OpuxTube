@@ -3,10 +3,28 @@
     <string name="core_view_count">%1$s views</string>
 
     <string name="core_just_now">just now</string>
-    <string name="core_minutes_ago">%1$d minutes ago</string>
-    <string name="core_hours_ago">%1$d hours ago</string>
-    <string name="core_days_ago">%1$d days ago</string>
-    <string name="core_weeks_ago">%1$d weeks ago</string>
-    <string name="core_months_ago">%1$d months ago</string>
-    <string name="core_years_ago">%1$d years ago</string>
+    <plurals name="core_minutes_ago">
+        <item quantity="one">%1$d minute ago</item>
+        <item quantity="other">%1$d minutes ago</item>
+    </plurals>
+    <plurals name="core_hours_ago">
+        <item quantity="one">%1$d hour ago</item>
+        <item quantity="other">%1$d hours ago</item>
+    </plurals>
+    <plurals name="core_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <plurals name="core_weeks_ago">
+        <item quantity="one">%1$d week ago</item>
+        <item quantity="other">%1$d weeks ago</item>
+    </plurals>
+    <plurals name="core_months_ago">
+        <item quantity="one">%1$d month ago</item>
+        <item quantity="other">%1$d months ago</item>
+    </plurals>
+    <plurals name="core_years_ago">
+        <item quantity="one">%1$d year ago</item>
+        <item quantity="other">%1$d years ago</item>
+    </plurals>
 </resources>

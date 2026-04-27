@@ -66,14 +66,17 @@ private fun formatRelativeFromInstant(
     val seconds = (now.epochSecond - instant.epochSecond).coerceAtLeast(0)
     return when {
         seconds < 60 -> context.getString(R.string.core_just_now)
-        seconds < 3600 -> context.getString(R.string.core_minutes_ago, (seconds / 60).toInt())
-        seconds < 86_400 -> context.getString(R.string.core_hours_ago, (seconds / 3600).toInt())
-        seconds < 604_800 -> context.getString(R.string.core_days_ago, (seconds / 86_400).toInt())
-        seconds < 2_592_000 -> context.getString(R.string.core_weeks_ago, (seconds / 604_800).toInt())
-        seconds < 31_536_000 -> context.getString(R.string.core_months_ago, (seconds / 2_592_000).toInt())
-        else -> context.getString(R.string.core_years_ago, (seconds / 31_536_000).toInt())
+        seconds < 3600 -> context.relativeQuantity(R.plurals.core_minutes_ago, (seconds / 60).toInt())
+        seconds < 86_400 -> context.relativeQuantity(R.plurals.core_hours_ago, (seconds / 3600).toInt())
+        seconds < 604_800 -> context.relativeQuantity(R.plurals.core_days_ago, (seconds / 86_400).toInt())
+        seconds < 2_592_000 -> context.relativeQuantity(R.plurals.core_weeks_ago, (seconds / 604_800).toInt())
+        seconds < 31_536_000 -> context.relativeQuantity(R.plurals.core_months_ago, (seconds / 2_592_000).toInt())
+        else -> context.relativeQuantity(R.plurals.core_years_ago, (seconds / 31_536_000).toInt())
     }
 }
+
+private fun Context.relativeQuantity(pluralRes: Int, count: Int): String =
+    resources.getQuantityString(pluralRes, count, count)
 
 private fun String.parseIsoOrNull(): Instant? {
     if (!contains('T') || length < 10) return null
@@ -92,14 +95,14 @@ private val ENGLISH_AGO_REGEX = Regex(
 private fun englishRelativeToLocalized(context: Context, text: String): String? {
     val match = ENGLISH_AGO_REGEX.find(text) ?: return null
     val value = match.groupValues[1].toIntOrNull() ?: return null
-    val resId = when (match.groupValues[2].lowercase(Locale.ROOT)) {
-        "second", "minute" -> R.string.core_minutes_ago
-        "hour" -> R.string.core_hours_ago
-        "day" -> R.string.core_days_ago
-        "week" -> R.string.core_weeks_ago
-        "month" -> R.string.core_months_ago
-        "year" -> R.string.core_years_ago
+    val pluralRes = when (match.groupValues[2].lowercase(Locale.ROOT)) {
+        "second", "minute" -> R.plurals.core_minutes_ago
+        "hour" -> R.plurals.core_hours_ago
+        "day" -> R.plurals.core_days_ago
+        "week" -> R.plurals.core_weeks_ago
+        "month" -> R.plurals.core_months_ago
+        "year" -> R.plurals.core_years_ago
         else -> return null
     }
-    return context.getString(resId, value)
+    return context.relativeQuantity(pluralRes, value)
 }

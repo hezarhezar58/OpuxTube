@@ -3,6 +3,8 @@ package dev.opux.tubeclient.feature.library.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.opux.tubeclient.core.domain.model.SponsorBlockCategory
+import dev.opux.tubeclient.core.domain.preferences.SponsorBlockPreferences
 import dev.opux.tubeclient.core.domain.usecase.ClearWatchHistoryUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSubscriptionsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetWatchHistoryUseCase
@@ -18,13 +20,19 @@ class LibraryViewModel @Inject constructor(
     getHistory: GetWatchHistoryUseCase,
     getSubscriptions: GetSubscriptionsUseCase,
     private val clearAll: ClearWatchHistoryUseCase,
+    private val sponsorBlockPreferences: SponsorBlockPreferences,
 ) : ViewModel() {
 
     val state: StateFlow<LibraryUiState> =
-        combine(getHistory(), getSubscriptions()) { history, subs ->
+        combine(
+            getHistory(),
+            getSubscriptions(),
+            sponsorBlockPreferences.enabledCategories,
+        ) { history, subs, enabled ->
             LibraryUiState(
                 history = history,
                 subscriptions = subs,
+                sponsorBlockEnabled = enabled,
                 isLoading = false,
             )
         }.stateIn(
@@ -35,5 +43,11 @@ class LibraryViewModel @Inject constructor(
 
     fun onClearHistory() {
         viewModelScope.launch { clearAll() }
+    }
+
+    fun onToggleCategory(category: SponsorBlockCategory, enabled: Boolean) {
+        viewModelScope.launch {
+            sponsorBlockPreferences.setCategoryEnabled(category, enabled)
+        }
     }
 }

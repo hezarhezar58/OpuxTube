@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":core:database"))
 
     implementation(libs.room.ktx)
+    implementation(libs.datastore.preferences)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

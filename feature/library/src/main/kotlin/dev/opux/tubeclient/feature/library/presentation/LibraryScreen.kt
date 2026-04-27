@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import dev.opux.tubeclient.core.domain.model.SponsorBlockCategory
 import dev.opux.tubeclient.core.domain.model.Subscription
 import dev.opux.tubeclient.core.domain.model.WatchHistoryEntry
 import dev.opux.tubeclient.core.ui.component.HistoryCard
@@ -108,6 +111,12 @@ fun LibraryScreen(
                     text = { Text("Abonelikler") },
                     modifier = Modifier.testTag("library_tab_subscriptions"),
                 )
+                Tab(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    text = { Text("Ayarlar") },
+                    modifier = Modifier.testTag("library_tab_settings"),
+                )
             }
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
@@ -121,9 +130,13 @@ fun LibraryScreen(
                         history = state.history,
                         onClick = onHistoryClick,
                     )
-                    else -> SubscriptionsTab(
+                    selectedTab == 1 -> SubscriptionsTab(
                         subscriptions = state.subscriptions,
                         onClick = onSubscriptionClick,
+                    )
+                    else -> SettingsTab(
+                        enabled = state.sponsorBlockEnabled,
+                        onToggleCategory = viewModel::onToggleCategory,
                     )
                 }
             }
@@ -225,6 +238,95 @@ private fun SubscriptionRow(
             }
         }
     }
+}
+
+@Composable
+private fun SettingsTab(
+    enabled: Set<SponsorBlockCategory>,
+    onToggleCategory: (SponsorBlockCategory, Boolean) -> Unit,
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        item(key = "sponsorblock_header") {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+            ) {
+                Text(
+                    text = "SponsorBlock kategorileri",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = "Atlamak istediğin segment türlerini seç",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        items(
+            items = SponsorBlockCategory.entries,
+            key = { it.name },
+        ) { category ->
+            SponsorBlockCategoryRow(
+                category = category,
+                enabled = category in enabled,
+                onToggle = { onToggleCategory(category, it) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SponsorBlockCategoryRow(
+    category: SponsorBlockCategory,
+    enabled: Boolean,
+    onToggle: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle(!enabled) }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .testTag("library_sb_${category.apiKey}"),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = category.label(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = category.description(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(checked = enabled, onCheckedChange = onToggle)
+    }
+}
+
+private fun SponsorBlockCategory.label(): String = when (this) {
+    SponsorBlockCategory.SPONSOR -> "Sponsor"
+    SponsorBlockCategory.INTRO -> "Giriş"
+    SponsorBlockCategory.OUTRO -> "Bitiş"
+    SponsorBlockCategory.SELF_PROMO -> "Kanal tanıtımı"
+    SponsorBlockCategory.INTERACTION -> "Etkileşim hatırlatması"
+    SponsorBlockCategory.MUSIC_OFFTOPIC -> "Müzik dışı bölüm"
+}
+
+private fun SponsorBlockCategory.description(): String = when (this) {
+    SponsorBlockCategory.SPONSOR -> "Ücretli sponsor reklamları"
+    SponsorBlockCategory.INTRO -> "Açılış / hook bölümü"
+    SponsorBlockCategory.OUTRO -> "Kapanış / endcard"
+    SponsorBlockCategory.SELF_PROMO -> "Kendi ürün veya kanalını tanıtma"
+    SponsorBlockCategory.INTERACTION -> "Beğen, abone ol gibi hatırlatmalar"
+    SponsorBlockCategory.MUSIC_OFFTOPIC -> "Müzik videolarındaki konuşma kısımları"
 }
 
 @Composable

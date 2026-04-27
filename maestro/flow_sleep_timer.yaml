@@ -1,0 +1,43 @@
+appId: dev.opux.tubeclient.debug
+---
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      id: "home_video_0"
+    timeout: 20000
+- tapOn:
+    id: "home_video_0"
+- extendedWaitUntil:
+    visible:
+      id: "player_sleep_timer"
+    timeout: 25000
+- takeScreenshot: 01_player_ready
+
+# Open the sleep-timer sheet and assert the option set.
+- tapOn:
+    id: "player_sleep_timer"
+- assertVisible: "Uyku zamanlayıcısı"
+- assertVisible: "Kapalı"
+- assertVisible: "5 dakika"
+- assertVisible: "30 dakika"
+- takeScreenshot: 02_sleep_sheet_open
+
+# Pick 5 dakika and reopen — the "Kalan: …" header should appear.
+- tapOn: "5 dakika"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: "player_sleep_timer"
+- assertVisible: "Kalan:"
+- takeScreenshot: 03_sleep_active
+
+# Cancel the timer.
+- tapOn: "Kapalı"
+- waitForAnimationToEnd:
+    timeout: 3000
+- tapOn:
+    id: "player_sleep_timer"
+- assertNotVisible: "Kalan:"
+- takeScreenshot: 04_sleep_canceled

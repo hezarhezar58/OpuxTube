@@ -19,6 +19,12 @@ data class CommentsUiState(
     val error: String? = null,
 )
 
+sealed interface RepliesState {
+    data object Loading : RepliesState
+    data class Loaded(val items: List<Comment>) : RepliesState
+    data class Failed(val message: String) : RepliesState
+}
+
 data class QualityOption(
     val label: String,
     val stream: VideoStream?,

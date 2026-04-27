@@ -15,6 +15,7 @@ import dev.opux.tubeclient.core.domain.repository.DownloadActions
 import dev.opux.tubeclient.core.domain.usecase.AddVideoToPlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.FindDownloadUseCase
+import dev.opux.tubeclient.core.domain.usecase.GetCommentRepliesUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetCommentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetLastPositionUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetSkipSegmentsUseCase
@@ -63,6 +64,7 @@ class PlayerViewModel @Inject constructor(
     private val findDownload: FindDownloadUseCase,
     private val downloadActions: DownloadActions,
     private val getComments: GetCommentsUseCase,
+    private val getCommentReplies: GetCommentRepliesUseCase,
 ) : ViewModel() {
 
     private val videoUrl: String = run {
@@ -80,6 +82,9 @@ class PlayerViewModel @Inject constructor(
 
     private val _comments = MutableStateFlow<CommentsUiState>(CommentsUiState())
     val comments: StateFlow<CommentsUiState> = _comments.asStateFlow()
+
+    private val _replies = MutableStateFlow<Map<String, RepliesState>>(emptyMap())
+    val replies: StateFlow<Map<String, RepliesState>> = _replies.asStateFlow()
 
     private val _skipEvents = MutableSharedFlow<SkippedSegmentEvent>(
         replay = 0,
@@ -185,6 +190,7 @@ class PlayerViewModel @Inject constructor(
 
     private fun fetchComments(videoUrl: String) {
         _comments.value = CommentsUiState(isLoading = true)
+        _replies.value = emptyMap()
         viewModelScope.launch {
             getComments(videoUrl)
                 .onSuccess { items ->
@@ -235,6 +241,29 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun retry() = loadAndPlay()
+
+    fun onToggleReplies(commentId: String, repliesToken: String?) {
+        if (repliesToken == null) return
+        val current = _replies.value[commentId]
+        when {
+            current is RepliesState.Loaded -> _replies.value = _replies.value - commentId
+            current is RepliesState.Loading -> Unit // already in flight
+            else -> {
+                _replies.value = _replies.value + (commentId to RepliesState.Loading)
+                viewModelScope.launch {
+                    getCommentReplies(repliesToken)
+                        .onSuccess { items ->
+                            _replies.value = _replies.value + (commentId to RepliesState.Loaded(items))
+                        }
+                        .onFailure { t ->
+                            Timber.w(t, "Replies fetch failed for %s", commentId)
+                            _replies.value = _replies.value +
+                                (commentId to RepliesState.Failed(t.message ?: "Yanıtlar alınamadı"))
+                        }
+                }
+            }
+        }
+    }
 
     fun onDownload() {
         val detail = _uiState.value.detail ?: return

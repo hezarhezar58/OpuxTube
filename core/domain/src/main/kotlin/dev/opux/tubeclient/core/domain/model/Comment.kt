@@ -10,4 +10,6 @@ data class Comment(
     val uploadedAt: String?,
     val isPinned: Boolean,
     val isHeartedByUploader: Boolean,
+    /** Opaque token the data layer can hand back to fetch replies, or null if none. */
+    val repliesToken: String? = null,
 )

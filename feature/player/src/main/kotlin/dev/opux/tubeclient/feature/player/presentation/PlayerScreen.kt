@@ -104,6 +104,7 @@ fun PlayerScreen(
     val playlists by viewModel.playlists.collectAsStateWithLifecycle()
     val downloadStatus by viewModel.downloadStatus.collectAsStateWithLifecycle()
     val commentsState by viewModel.comments.collectAsStateWithLifecycle()
+    val repliesState by viewModel.replies.collectAsStateWithLifecycle()
     val isInPip = LocalIsInPipMode.current
     val snackbarHostState = remember { SnackbarHostState() }
     var showPlaylistSheet by remember { mutableStateOf(false) }
@@ -349,6 +350,8 @@ fun PlayerScreen(
                 uiState.detail != null -> DetailContent(
                     detail = uiState.detail!!,
                     comments = commentsState,
+                    replies = repliesState,
+                    onToggleReplies = viewModel::onToggleReplies,
                     onRelatedClick = onRelatedClick,
                     onChannelClick = onChannelClick,
                 )
@@ -703,6 +706,8 @@ private fun VideoSurface(
 private fun DetailContent(
     detail: VideoDetail,
     comments: CommentsUiState,
+    replies: Map<String, RepliesState>,
+    onToggleReplies: (String, String?) -> Unit,
     onRelatedClick: (VideoPreview) -> Unit,
     onChannelClick: (String) -> Unit,
 ) {
@@ -754,7 +759,11 @@ private fun DetailContent(
             }
         }
         item(key = "comments_header") {
-            CommentsSection(state = comments)
+            CommentsSection(
+                state = comments,
+                replies = replies,
+                onToggleReplies = onToggleReplies,
+            )
         }
         if (detail.relatedVideos.isNotEmpty()) {
             item {
@@ -780,7 +789,11 @@ private fun DetailContent(
 }
 
 @Composable
-private fun CommentsSection(state: CommentsUiState) {
+private fun CommentsSection(
+    state: CommentsUiState,
+    replies: Map<String, RepliesState>,
+    onToggleReplies: (String, String?) -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -822,6 +835,8 @@ private fun CommentsSection(state: CommentsUiState) {
                 state.items.take(MAX_COMMENT_PREVIEW).forEachIndexed { index, comment ->
                     CommentRow(
                         comment = comment,
+                        replies = replies[comment.id],
+                        onToggleReplies = { onToggleReplies(comment.id, comment.repliesToken) },
                         modifier = Modifier.testTag("player_comment_$index"),
                     )
                 }
@@ -838,14 +853,127 @@ private fun CommentsSection(state: CommentsUiState) {
 }
 
 @Composable
-private fun CommentRow(comment: Comment, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.fillMaxWidth()) {
+private fun CommentRow(
+    comment: Comment,
+    replies: RepliesState?,
+    onToggleReplies: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            AsyncImage(
+                model = comment.authorAvatarUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = comment.authorName,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    val uploadedAt = comment.uploadedAt
+                    if (!uploadedAt.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = uploadedAt,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (comment.isPinned) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "📌",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+                Text(
+                    text = comment.text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (comment.likeCount > 0) {
+                    Text(
+                        text = "👍 ${comment.likeCount}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (comment.replyCount > 0 && comment.repliesToken != null) {
+                    val expanded = replies is RepliesState.Loaded
+                    Text(
+                        text = if (expanded) "Yanıtları gizle" else "${comment.replyCount} yanıtı göster",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .clickable(onClick = onToggleReplies)
+                            .testTag("player_comment_replies_${comment.id}"),
+                    )
+                } else if (comment.replyCount > 0) {
+                    Text(
+                        text = "${comment.replyCount} yanıt",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        when (replies) {
+            is RepliesState.Loading -> Row(
+                modifier = Modifier
+                    .padding(start = 40.dp, top = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CircularProgressIndicator(
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(14.dp),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Yanıtlar yükleniyor…",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            is RepliesState.Failed -> Text(
+                text = replies.message,
+                modifier = Modifier.padding(start = 40.dp, top = 6.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+            is RepliesState.Loaded -> Column(
+                modifier = Modifier.padding(start = 40.dp, top = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                replies.items.forEach { reply ->
+                    ReplyRow(reply)
+                }
+            }
+            null -> Unit
+        }
+    }
+}
+
+@Composable
+private fun ReplyRow(reply: Comment) {
+    Row(modifier = Modifier.fillMaxWidth()) {
         AsyncImage(
-            model = comment.authorAvatarUrl,
+            model = reply.authorAvatarUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(32.dp)
+                .size(24.dp)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         )
@@ -853,11 +981,11 @@ private fun CommentRow(comment: Comment, modifier: Modifier = Modifier) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = comment.authorName,
-                    style = MaterialTheme.typography.labelLarge,
+                    text = reply.authorName,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
-                val uploadedAt = comment.uploadedAt
+                val uploadedAt = reply.uploadedAt
                 if (!uploadedAt.isNullOrBlank()) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -866,30 +994,17 @@ private fun CommentRow(comment: Comment, modifier: Modifier = Modifier) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (comment.isPinned) {
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "📌",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
             }
             Text(
-                text = comment.text,
+                text = reply.text,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 4,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (comment.likeCount > 0 || comment.replyCount > 0) {
+            if (reply.likeCount > 0) {
                 Text(
-                    text = buildString {
-                        if (comment.likeCount > 0) append("👍 ${comment.likeCount}")
-                        if (comment.replyCount > 0) {
-                            if (isNotEmpty()) append(" · ")
-                            append("${comment.replyCount} yanıt")
-                        }
-                    },
+                    text = "👍 ${reply.likeCount}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

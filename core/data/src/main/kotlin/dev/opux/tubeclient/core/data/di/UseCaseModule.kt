@@ -24,6 +24,7 @@ import dev.opux.tubeclient.core.domain.usecase.CreatePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeleteDownloadUseCase
 import dev.opux.tubeclient.core.domain.usecase.DeletePlaylistUseCase
 import dev.opux.tubeclient.core.domain.usecase.FindDownloadUseCase
+import dev.opux.tubeclient.core.domain.usecase.GetCommentRepliesUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetCommentsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelDetailsUseCase
 import dev.opux.tubeclient.core.domain.usecase.GetChannelVideosUseCase
@@ -156,6 +157,10 @@ object UseCaseModule {
     @Provides
     @Singleton
     fun provideGetCommentsUseCase(repo: CommentRepository) = GetCommentsUseCase(repo)
+
+    @Provides
+    @Singleton
+    fun provideGetCommentRepliesUseCase(repo: CommentRepository) = GetCommentRepliesUseCase(repo)
 
     @Provides
     @Singleton

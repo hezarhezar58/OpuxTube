@@ -113,6 +113,7 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.sentry.android)
     implementation(libs.sentry.android.timber)
+    implementation(libs.androidx.core.splashscreen)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.tooling.preview)

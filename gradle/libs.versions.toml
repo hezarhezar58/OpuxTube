@@ -55,6 +55,9 @@ timber = "5.0.1"
 # Crash reporting
 sentry = "7.18.0"
 
+# Splash screen
+coreSplashscreen = "1.0.1"
+
 # Testing
 junit = "4.13.2"
 androidxTestExt = "1.2.1"
@@ -132,6 +135,9 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 # Crash reporting
 sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
 sentry-android-timber = { group = "io.sentry", name = "sentry-android-timber", version.ref = "sentry" }
+
+# Splash screen
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

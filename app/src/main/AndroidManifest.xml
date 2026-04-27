@@ -21,6 +21,16 @@
         android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="34">
 
+        <!-- Sentry crash reporting. The DSN is a public client identifier by design;
+             rate-limiting / sampling is enforced server-side per project. We leave
+             traces.sample-rate and session-replay rates at their defaults (off) —
+             only crashes and explicit Sentry.captureException calls are sent, which
+             keeps us inside the free tier with room to spare. -->
+        <meta-data
+            android:name="io.sentry.dsn"
+            android:value="https://042d8b0d17940961a5c0bd134bea9f8a@o4511293190111232.ingest.us.sentry.io/4511293194895360" />
+        <meta-data android:name="io.sentry.auto-init" android:value="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

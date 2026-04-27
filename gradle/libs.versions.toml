@@ -52,6 +52,9 @@ newpipeExtractor = "v0.26.1"
 # Logging
 timber = "5.0.1"
 
+# Crash reporting
+sentry = "7.18.0"
+
 # Testing
 junit = "4.13.2"
 androidxTestExt = "1.2.1"
@@ -125,6 +128,10 @@ newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor
 
 # Logging
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+# Crash reporting
+sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
+sentry-android-timber = { group = "io.sentry", name = "sentry-android-timber", version.ref = "sentry" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

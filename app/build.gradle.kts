@@ -111,6 +111,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.okhttp)
     implementation(libs.timber)
+    implementation(libs.sentry.android)
+    implementation(libs.sentry.android.timber)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.tooling.preview)

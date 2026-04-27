@@ -13,6 +13,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
@@ -31,7 +32,7 @@ import timber.log.Timber
 @AndroidEntryPoint
 class OpuxPlaybackService : MediaSessionService() {
 
-    private lateinit var httpFactory: DataSource.Factory
+    private lateinit var dataSourceFactory: DataSource.Factory
     private lateinit var progressiveFactory: ProgressiveMediaSource.Factory
     private lateinit var player: ExoPlayer
     private var mediaSession: MediaSession? = null
@@ -40,12 +41,17 @@ class OpuxPlaybackService : MediaSessionService() {
     override fun onCreate() {
         super.onCreate()
 
-        httpFactory = DefaultHttpDataSource.Factory()
+        val httpFactory = DefaultHttpDataSource.Factory()
             .setUserAgent(USER_AGENT)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(15_000)
             .setAllowCrossProtocolRedirects(true)
-        progressiveFactory = ProgressiveMediaSource.Factory(httpFactory)
+        // DefaultDataSource dispatches on URI scheme: file:// / asset:// / content://
+        // resolve locally, http(s):// fall through to httpFactory. Without this wrapper,
+        // ExoPlayer would try to open `file:///...mp4` as HTTP and crash with
+        // ClassCastException on FileURLConnection.
+        dataSourceFactory = DefaultDataSource.Factory(this, httpFactory)
+        progressiveFactory = ProgressiveMediaSource.Factory(dataSourceFactory)
 
         player = ExoPlayer.Builder(this)
             .setHandleAudioBecomingNoisy(true)
